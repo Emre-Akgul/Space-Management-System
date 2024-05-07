@@ -17,11 +17,24 @@ services:
       - "3307:3306"
     volumes:
       - ./schema.sql:/docker-entrypoint-initdb.d/schema.sql
-  frontend:
-    build: ./frontend
+  app-prod:
+    build:
+      context: ./frontend
+      args:
+        - NODE_ENV=production
     ports:
-      - "3000:3000"
-    depends_on:
-      - db
+      - '3000:3000'
+
+  app-dev:
+    build:
+      context: ./frontend
+      target: deps
+    command: npm run dev
+    ports:
+      - '3001:3000'
+    environment:
+      - NODE_ENV=development
     volumes:
-      - ./frontend:/app/
+      - .:/app
+      - /app/node_modules
+      - /app/.next
