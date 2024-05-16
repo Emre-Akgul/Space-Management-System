@@ -10,37 +10,24 @@ CREATE TABLE User (
 	email VARCHAR(256) NOT NULL
 );
 
-CREATE TABLE Astronaut (
-	user_id INT PRIMARY KEY,
-	company_id INT,
-	date_of_birth DATE,
-	nationality VARCHAR(40) NOT NULL,
-	experience_level VARCHAR(40),
-	preferred_role VARCHAR(40),
-	FOREIGN KEY (user_id) REFERENCES User(user_id),
-	FOREIGN KEY (company_id) REFERENCES User(user_id)
+CREATE TABLE launch_vehicle (
+	launch_vehicle_id INT AUTO_INCREMENT PRIMARY KEY,
+	launch_vehicle_name VARCHAR(255),
+	model VARCHAR(100),
+	status VARCHAR(50),
+	launch_site VARCHAR(100)
 );
 
-CREATE TABLE Company (
-	user_id INT PRIMARY KEY,
-	address VARCHAR(256) NOT NULL,
-	industry_sector VARCHAR(50) NOT NULL,
-	website VARCHAR(256),
-	FOREIGN KEY (user_id) REFERENCES User(user_id)
-);
-
-CREATE TABLE participates (
-	astronaut_id INT,
-	mission_id INT,
-	FOREIGN KEY (astronaut_id) REFERENCES User(user_id),
-	FOREIGN KEY (mission_id) REFERENCES space_mission(mission_id) ,
-	PRIMARY KEY (astronaut_id, mission_id)
-);
-
-CREATE TABLE Admin (
-	user_id INT PRIMARY KEY,
-	permission_level VARCHAR(256) NOT NULL,
-	FOREIGN KEY (user_id) REFERENCES User(user_id)
+CREATE TABLE Spaceship (
+	spaceship_id INT AUTO_INCREMENT PRIMARY KEY,
+	spaceship_name VARCHAR(256) NOT NULL,
+	type VARCHAR(50) NOT NULL,
+	status VARCHAR(50) NOT NULL,
+	capacity INT NOT NULL,
+	owner_comp_id INT NOT NULL,
+	launch_vehicle_id INT,
+	FOREIGN KEY (owner_comp_id) REFERENCES User(user_id),
+	FOREIGN KEY (launch_vehicle_id) REFERENCES launch_vehicle(launch_vehicle_id)
 );
 
 CREATE TABLE space_mission (
@@ -54,34 +41,24 @@ CREATE TABLE space_mission (
 	duration INT,
 	crew_size INT,
 	required_roles VARCHAR(255),
-	bid_deadline DATE;
+	bid_deadline DATE,
 	creator_comp_id INT,
 	manager_comp_id INT,
 	spaceship_id INT,
-	FOREIGN KEY (creator_comp_id) REFERENCES User(user_id), -- Assuming User table has a primary key called user_id
-	FOREIGN KEY (manager_comp_id) REFERENCES User(user_id), --Assuming User table has a primary key called user_id
-	FOREIGN KEY (spaceship_id) REFERENCES spaceship(spaceship_id) -- Assuming spaceship table has a primary key called spaceship_id
+	FOREIGN KEY (creator_comp_id) REFERENCES User(user_id),
+	FOREIGN KEY (manager_comp_id) REFERENCES User(user_id),
+	FOREIGN KEY (spaceship_id) REFERENCES Spaceship(spaceship_id)
 );
 
-CREATE TABLE Spaceship (
-	spaceship_id INT AUTO_INCREMENT PRIMARY KEY,
-	spaceship_name VARCHAR(256) NOT NULL,
-	type VARCHAR(50) NOT NULL,
-	status VARCHAR(50) NOT NULL,
-	capacity INT NOT NULL,
-	owner_comp _id INT NOT NULL,
-	launch_vehicle_id INT,
-	FOREIGN KEY (owner_comp_id) REFERENCES User(user_id),
-	FOREIGN KEY (launch_vehicle_id) REFERENCES
-	launch_vehicle(launch_vehicle_id)
-);
-
-CREATE TABLE launch_vehicle (
-	launch_vehicle_id INT AUTO_INCREMENT PRIMARY KEY,
-	launch_vehicle_name VARCHAR(255),
-	model VARCHAR(100),
+CREATE TABLE bid (
+	bid_id INT AUTO_INCREMENT PRIMARY KEY,
+	bid_amount FLOAT(15, 2),
+	bid_date DATE,
 	status VARCHAR(50),
-	launch_site VARCHAR(100)
+	company_id INT,
+	mission_id INT,
+	FOREIGN KEY (company_id) REFERENCES User(user_id),
+	FOREIGN KEY (mission_id) REFERENCES space_mission(mission_id)
 );
 
 CREATE TABLE financial_transaction (
@@ -99,17 +76,6 @@ CREATE TABLE financial_transaction (
 	FOREIGN KEY (mission_id) REFERENCES space_mission(mission_id)
 );
 
-CREATE TABLE bid (
-	bid_id INT AUTO_INCREMENT PRIMARY KEY,
-	bid_amount FLOAT(15, 2),
-	bid_date DATE,
-	status VARCHAR(50),
-	company_id INT,
-	mission_id INT,
-	FOREIGN KEY (company_id) REFERENCES User(user_id),
-	FOREIGN KEY (mission_id) REFERENCES space_mission(mission_id)
-);
-
 CREATE TABLE communication_log (
 	log_id INT PRIMARY KEY AUTO_INCREMENT,
 	date_time DATETIME,
@@ -123,6 +89,38 @@ CREATE TABLE communication_log (
 	FOREIGN KEY (mission_id) REFERENCES space_mission(mission_id)
 );
 
+CREATE TABLE Admin (
+	user_id INT PRIMARY KEY,
+	permission_level VARCHAR(256) NOT NULL,
+	FOREIGN KEY (user_id) REFERENCES User(user_id)
+);
+
+CREATE TABLE Company (
+	user_id INT PRIMARY KEY,
+	address VARCHAR(256) NOT NULL,
+	industry_sector VARCHAR(50) NOT NULL,
+	website VARCHAR(256),
+	FOREIGN KEY (user_id) REFERENCES User(user_id)
+);
+
+CREATE TABLE Astronaut (
+	user_id INT PRIMARY KEY,
+	company_id INT,
+	date_of_birth DATE,
+	nationality VARCHAR(40) NOT NULL,
+	experience_level VARCHAR(40),
+	preferred_role VARCHAR(40),
+	FOREIGN KEY (user_id) REFERENCES User(user_id),
+	FOREIGN KEY (company_id) REFERENCES Company(user_id)
+);
+
+CREATE TABLE participates (
+	astronaut_id INT,
+	mission_id INT,
+	FOREIGN KEY (astronaut_id) REFERENCES User(user_id),
+	FOREIGN KEY (mission_id) REFERENCES space_mission(mission_id) ,
+	PRIMARY KEY (astronaut_id, mission_id)
+);
 
 CREATE TABLE mission_resource (
 	mission_id INT,
@@ -133,20 +131,19 @@ CREATE TABLE mission_resource (
 	PRIMARY KEY (mission_id, resource_id)
 );
 
-
 CREATE TABLE Training_program (
 	program_id INT AUTO_INCREMENT PRIMARY KEY,
 	name VARCHAR(256),
 	description VARCHAR(4096),
 	required_for VARCHAR(100),
-	completion_date DATE,
+	completion_date DATE
 );
 
 CREATE TABLE astronaut_training (
 	astronaut_id INT,
 	program_id INT,
 	FOREIGN KEY (astronaut_id) REFERENCES User(user_id),
-	FOREIGN KEY (program_id) REFERENCES training_program(program_id),
+	FOREIGN KEY (program_id) REFERENCES Training_program(program_id),
 	PRIMARY KEY (astronaut_id, program_id)
 );
 
