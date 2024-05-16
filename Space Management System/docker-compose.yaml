@@ -8,11 +8,13 @@ services:
       - ./app:/app
     working_dir: /app
     command: python app.py
+    depends_on:
+      - db
   db:
     image: mysql:5.7
     environment:
       MYSQL_ROOT_PASSWORD: password
-      MYSQL_DATABASE: cs353hw4db
+      MYSQL_DATABASE: spaceapp
     ports:
       - "3307:3306"
     volumes:

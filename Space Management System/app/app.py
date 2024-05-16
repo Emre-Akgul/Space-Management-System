@@ -14,7 +14,7 @@ app.secret_key = 'abcdefgh'
 app.config['MYSQL_HOST'] = 'db'
 app.config['MYSQL_USER'] = 'root'
 app.config['MYSQL_PASSWORD'] = 'password'
-app.config['MYSQL_DB'] = 'cs353hw4db'
+app.config['MYSQL_DB'] = 'spaceapp'
   
 mysql = MySQL(app)  
 
@@ -52,13 +52,14 @@ def login_company():
 def register_company():
     message = ''
     if request.method == 'POST':
-        username = request.form.get('username')
-        name = request.form.get('name')
-        password = request.form.get('password')
-        email = request.form.get('email')
-        address = request.form.get('address')
-        industry_sector = request.form.get('industry_sector')
-        website = request.form.get('website')  # This field is optional
+        username = request.form['username']
+        name = request.form['name']
+        password = request.form['password']
+        email = request.form['email']
+        address = request.form['address']
+        industry_sector = request.form['industry_sector']
+        website = request.form['website']  # This field is optional
+
 
         # Check if any required field is empty
         if not (username and name and password and email and address and industry_sector):
