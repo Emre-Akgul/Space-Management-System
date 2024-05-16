@@ -89,6 +89,25 @@ def register_company():
     return render_template('register_company.html', message=message)
 
 
+@app.route('/missions', methods=['GET'])
+def missions():
+    missions = []
+    try:
+        cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
+        query = """
+            SELECT mission_name, description, status, launch_date, destination, cost, duration, crew_size 
+            FROM space_mission
+        """
+        cursor.execute(query)
+        missions = cursor.fetchall()
+    except Exception as e:
+        print(f"Error fetching missions: {e}")
+    finally:
+        cursor.close()
+    
+    return render_template('missions.html', missions=missions)
+
+
 @app.route('/main')
 def main_page():
     if 'loggedin' in session:
