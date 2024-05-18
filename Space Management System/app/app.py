@@ -230,6 +230,70 @@ def handle_bid(bid_id, mission_id):
     return redirect(url_for('biddings'))
 
 
+@app.route('/managed_missions')
+def managed_missions():
+    if 'loggedin' not in session:
+        return redirect(url_for('login_company'))
+
+    manager_id = session['user_id']
+    cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
+
+    # Fetch missions managed by the logged-in company along with the creator company name and allocated spaceship name
+    cursor.execute("""
+        SELECT sm.mission_id, sm.mission_name, sm.status, sm.spaceship_id, sm.creator_comp_id, u.name AS creator_company_name, s.spaceship_name AS allocated_spaceship_name
+        FROM space_mission sm
+        JOIN User u ON sm.creator_comp_id = u.user_id
+        LEFT JOIN Spaceship s ON sm.spaceship_id = s.spaceship_id
+        WHERE sm.manager_comp_id = %s
+    """, (manager_id,))
+
+    missions = cursor.fetchall()
+
+    # Prepare list to collect company IDs (both manager and creator)
+    company_ids = set([manager_id])  # Start with the manager company ID
+    for mission in missions:
+        company_ids.add(mission['creator_comp_id'])  # Add creator comp IDs
+
+    # Fetch all spaceships owned by the session's company and each mission's creator company
+    # Convert set to list for SQL query compatibility
+    company_ids = list(company_ids)
+    format_strings = ','.join(['%s'] * len(company_ids))  # Create format strings for SQL query
+    cursor.execute("""
+        SELECT spaceship_id, spaceship_name, type, status, owner_comp_id
+        FROM Spaceship
+        WHERE owner_comp_id IN (%s)
+    """ % format_strings, tuple(company_ids))
+
+    spaceships = cursor.fetchall()
+
+    cursor.close()
+
+    # Organize spaceships by owner for easier access in the template
+    spaceship_dict = {}
+    for spaceship in spaceships:
+        owner_id = spaceship['owner_comp_id']
+        if owner_id not in spaceship_dict:
+            spaceship_dict[owner_id] = []
+        spaceship_dict[owner_id].append(spaceship)
+
+    return render_template('managed_missions.html', missions=missions, spaceships=spaceship_dict)
+
+
+@app.route('/allocate_spaceship/<int:mission_id>', methods=['POST'])
+def allocate_spaceship(mission_id):
+    if 'loggedin' not in session:
+        return redirect(url_for('login_company'))
+
+    spaceship_id = request.form.get('spaceship_id')
+    cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
+
+    # Update the mission with the selected spaceship
+    cursor.execute("UPDATE space_mission SET spaceship_id = %s WHERE mission_id = %s", (spaceship_id, mission_id))
+
+    mysql.connection.commit()
+    cursor.close()
+    flash('Spaceship allocated successfully!', 'success')
+    return redirect(url_for('managed_missions'))
 
 
 @app.route('/main')
