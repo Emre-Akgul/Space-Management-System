@@ -7,7 +7,7 @@ import MySQLdb.cursors
 import bcrypt
 from datetime import datetime
 
-
+#test
 app = Flask(__name__) 
 
 app.secret_key = 'abcdefgh'
