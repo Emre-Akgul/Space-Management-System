@@ -87,21 +87,56 @@ def register_company():
 
 @app.route('/missions', methods=['GET'])
 def missions():
+    # Existing query parameters
+    status = request.args.get('status', '')
+    cost_min = request.args.get('cost_min', '')
+    cost_max = request.args.get('cost_max', '')
+    launch_after = request.args.get('launch_after', '')
+    launch_before = request.args.get('launch_before', '')
+    crew_min = request.args.get('crew_min', '')  # New minimum crew size
+    crew_max = request.args.get('crew_max', '')  # New maximum crew size
+
+    # Building the query
+    query_parts = ["SELECT mission_id, mission_name, description, status, launch_date, destination, cost, duration, crew_size FROM space_mission WHERE 1=1"]
+    query_params = []
+
+    if status:
+        query_parts.append("AND status = %s")
+        query_params.append(status)
+    if cost_min:
+        query_parts.append("AND cost >= %s")
+        query_params.append(cost_min)
+    if cost_max:
+        query_parts.append("AND cost <= %s")
+        query_params.append(cost_max)
+    if launch_after:
+        query_parts.append("AND launch_date >= %s")
+        query_params.append(launch_after)
+    if launch_before:
+        query_parts.append("AND launch_date <= %s")
+        query_params.append(launch_before)
+    if crew_min:
+        query_parts.append("AND crew_size >= %s")
+        query_params.append(crew_min)
+    if crew_max:
+        query_parts.append("AND crew_size <= %s")
+        query_params.append(crew_max)
+
+    query = " ".join(query_parts)
+    
     missions = []
     try:
         cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
-        query = """
-            SELECT mission_id, mission_name, description, status, launch_date, destination, cost, duration, crew_size 
-            FROM space_mission
-        """
-        cursor.execute(query)
+        cursor.execute(query, tuple(query_params))
         missions = cursor.fetchall()
     except Exception as e:
         print(f"Error fetching missions: {e}")
     finally:
         cursor.close()
     
-    return render_template('missions.html', missions=missions)
+    return render_template('missions.html', missions=missions, status=status, cost_min=cost_min, cost_max=cost_max, launch_after=launch_after, launch_before=launch_before, crew_min=crew_min, crew_max=crew_max)
+
+
 
 @app.route('/mission/<int:mission_id>', methods=['GET', 'POST'])
 def mission_details(mission_id):
