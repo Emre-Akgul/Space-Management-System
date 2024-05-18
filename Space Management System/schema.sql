@@ -170,9 +170,16 @@ CREATE TABLE mission_feedback (
 -- Inserting sample data into User table
 INSERT INTO User (username, name, password, email)
 VALUES
-('companyA', 'Company A', 'password1', 'companya@example.com'),
-('companyB', 'Company B', 'password2', 'companyb@example.com'),
-('companyC', 'Company C', 'password3', 'companyc@example.com');
+('companyA', 'Company A', '123', 'companya@example.com'),
+('companyB', 'Company B', '123', 'companyb@example.com'),
+('companyC', 'Company C', '123', 'companyc@example.com');
+
+-- Inserting corresponding data into Company table
+INSERT INTO Company (user_id, address, industry_sector, website)
+VALUES
+(1, '123 Space St, City A', 'Aerospace', 'www.companya.com'),
+(2, '456 Orbit Ave, City B', 'Mining', 'www.companyb.com'),
+(3, '789 Galaxy Blvd, City C', 'Research', 'www.companyc.com');
 
 -- Inserting sample data into launch_vehicle table
 INSERT INTO launch_vehicle (launch_vehicle_name, model, status, launch_site)
@@ -195,20 +202,20 @@ VALUES
 -- Inserting space missions
 INSERT INTO space_mission (mission_name, description, status, launch_date, destination, cost, duration, crew_size, required_roles, bid_deadline, creator_comp_id, manager_comp_id, spaceship_id)
 VALUES
-('Mission Alpha', 'Exploration of the Alpha Centauri system', 'Scheduled', '2024-08-15', 'Alpha Centauri', 150000000.00, 730, 6, 'Pilot, Engineer, Scientist', '2024-05-01', 1, 2, 1);
+('Mission Alpha', 'Exploration of the Alpha Centauri system', 'Bidding', '2024-09-15', 'Alpha Centauri', 150000000.00, 730, 6, 'Pilot, Engineer, Scientist', '2024-08-20', 1, 2, 1);
 
 INSERT INTO space_mission (mission_name, description, status, launch_date, destination, cost, duration, crew_size, required_roles, bid_deadline, creator_comp_id, manager_comp_id, spaceship_id)
 VALUES
-('Mission Beta', 'Mining operation on asteroid 4660 Nereus', 'Planned', '2025-03-20', '4660 Nereus', 200000000.00, 365, 8, 'Pilot, Engineer, Miner', '2024-12-15', 2, 3, 2);
+('Mission Beta', 'Mining operation on asteroid 4660 Nereus', 'Planned', '2025-10-05', '4660 Nereus', 200000000.00, 365, 8, 'Pilot, Engineer, Miner', '2024-11-20', 2, 3, 2);
 
 INSERT INTO space_mission (mission_name, description, status, launch_date, destination, cost, duration, crew_size, required_roles, bid_deadline, creator_comp_id, manager_comp_id, spaceship_id)
 VALUES
-('Mission Gamma', 'Establishing a research station on Mars', 'In Progress', '2023-12-10', 'Mars', 500000000.00, 1095, 12, 'Pilot, Engineer, Scientist, Doctor', '2023-10-01', 3, 1, 3);
+('Mission Gamma', 'Establishing a research station on Mars', 'In Progress', '2024-12-15', 'Mars', 500000000.00, 1095, 12, 'Pilot, Engineer, Scientist, Doctor', '2024-08-25', 3, 1, 3);
 
 INSERT INTO space_mission (mission_name, description, status, launch_date, destination, cost, duration, crew_size, required_roles, bid_deadline, creator_comp_id, manager_comp_id, spaceship_id)
 VALUES
-('Mission Delta', 'Mapping the surface of Europa', 'Completed', '2022-05-05', 'Europa', 750000000.00, 548, 10, 'Pilot, Engineer, Scientist', '2021-12-20', 1, 2, 4);
+('Mission Delta', 'Mapping the surface of Europa', 'Completed', '2025-01-10', 'Europa', 750000000.00, 548, 10, 'Pilot, Engineer, Scientist', '2024-09-15', 1, 2, 4);
 
 INSERT INTO space_mission (mission_name, description, status, launch_date, destination, cost, duration, crew_size, required_roles, bid_deadline, creator_comp_id, manager_comp_id, spaceship_id)
 VALUES
-('Mission Epsilon', 'Space tourism around the Moon', 'Scheduled', '2024-11-30', 'Moon', 100000000.00, 14, 4, 'Pilot, Tour Guide', '2024-09-01', 2, 3, 5);
+('Mission Epsilon', 'Space tourism around the Moon', 'Scheduled', '2024-10-20', 'Moon', 100000000.00, 14, 4, 'Pilot, Tour Guide', '2024-08-30', 2, 3, 5);

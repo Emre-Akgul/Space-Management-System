@@ -3,6 +3,17 @@
 {% block content %}
 <div class="container mt-5">
     <h2>{{ mission.mission_name }} Details</h2>
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            {% for category, message in messages %}
+                <div class="alert alert-{{ category }}" role="alert">
+                    {{ message }}
+                </div>
+            {% endfor %}
+        {% endif %}
+    {% endwith %}
+
     <div class="card mb-4">
         <div class="card-body">
             <h5 class="card-title">{{ mission.mission_name }}</h5>
@@ -16,6 +27,8 @@
                 <li class="list-group-item"><strong>Crew Size:</strong> {{ mission.crew_size }}</li>
             </ul>
         </div>
+
+        {% if mission.status == 'Bidding' and not bid_deadline_passed %}
         <div class="card-footer text-right">
             <form method="POST" action="{{ url_for('mission_details', mission_id=mission.mission_id) }}">
                 <div class="form-group">
@@ -25,6 +38,7 @@
                 <button type="submit" class="btn btn-primary">Submit Bid</button>
             </form>
         </div>
+        {% endif %}
     </div>
 </div>
 {% endblock %}

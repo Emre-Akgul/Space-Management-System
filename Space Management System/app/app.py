@@ -5,6 +5,7 @@ from flask import Flask, render_template, request, redirect, url_for, session, f
 from flask_mysqldb import MySQL
 import MySQLdb.cursors
 import bcrypt
+from datetime import datetime
 
 
 app = Flask(__name__) 
@@ -37,9 +38,9 @@ def login_company():
         cursor.execute('SELECT User.user_id, User.name, User.password FROM User INNER JOIN Company ON User.user_id = Company.user_id WHERE User.username = %s', (username,))
         
         user = cursor.fetchone()
-        if user and bcrypt.checkpw(password.encode('utf-8'), user['password'].encode('utf-8')):
+        if user and password == user['password']:
             session['loggedin'] = True
-            session['userid'] = user['user_id'] 
+            session['user_id'] = user['user_id'] 
             session['username'] = user['name']
             return redirect(url_for('main_page'))
         else:
@@ -60,7 +61,6 @@ def register_company():
         industry_sector = request.form['industry_sector']
         website = request.form['website']  # This field is optional
 
-
         # Check if any required field is empty
         if not (username and name and password and email and address and industry_sector):
             message = 'Please fill out all required fields!'
@@ -72,12 +72,9 @@ def register_company():
             if cursor.fetchone():
                 message = 'Username already taken. Please choose a different username.'
             else:
-                # Hash password before storing it
-                hashed_password = bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt())
-
                 # Insert new user into User table
                 cursor.execute('INSERT INTO User (username, name, password, email) VALUES (%s, %s, %s, %s)',
-                               (username, name, hashed_password, email))
+                               (username, name, password, email))
                 user_id = cursor.lastrowid  # Fetch the last inserted id
 
                 # Insert new company into Company table
@@ -87,7 +84,6 @@ def register_company():
                 message = 'Company successfully registered!'
 
     return render_template('register_company.html', message=message)
-
 
 @app.route('/missions', methods=['GET'])
 def missions():
@@ -107,7 +103,6 @@ def missions():
     
     return render_template('missions.html', missions=missions)
 
-
 @app.route('/mission/<int:mission_id>', methods=['GET', 'POST'])
 def mission_details(mission_id):
     cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
@@ -120,48 +115,121 @@ def mission_details(mission_id):
         flash('Mission not found!', 'error')
         return redirect(url_for('main_page'))
 
-    # Check if bidding is allowed for the mission
-    if mission['status'] != 'Bidding':
-        flash('Bidding is not allowed for this mission!', 'error')
-        return redirect(url_for('main_page'))
-
     # Check if the bidding deadline has passed
-    cursor.execute('SELECT COUNT(*) AS is_deadline_passed FROM space_mission WHERE mission_id = %s AND bid_deadline < CURRENT_DATE()', (mission_id,))
-    deadline_check = cursor.fetchone()
+    bid_deadline_passed = mission['bid_deadline'] < datetime.now().date()
 
-    if deadline_check['is_deadline_passed'] > 0:
-        flash('Bidding deadline has passed!', 'error')
-        return redirect(url_for('main_page'))
+    # Flash messages for status and bid deadline
+    if mission['status'] != 'Bidding':
+        flash('Bidding is not allowed for this mission!', 'danger')
+    if bid_deadline_passed:
+        flash('Bidding deadline has passed!', 'danger')
 
-    # Check if company has any conflicting missions
-    current_company_id = session.get('user_id')  # Assuming company ID is stored in session
-    cursor.execute('''
-        SELECT COUNT(*) AS existing_missions
-        FROM space_mission
-        WHERE company_id = %s
-        AND (
-            (launch_date < %s AND DATE_ADD(launch_date, INTERVAL duration DAY) > %s)
-            OR (launch_date BETWEEN %s AND %s)
-        )
-    ''', (current_company_id, mission['launch_date'], mission['launch_date'], mission['launch_date'], mission['launch_date']))
-    conflict_check = cursor.fetchone()
-
-    if conflict_check['existing_missions'] > 0:
-        flash('Company has conflicting missions!', 'error')
-        return redirect(url_for('main_page'))
-
-    # Handle bidding form submission
-    if request.method == 'POST':
+    # Handle bid submission
+    if request.method == 'POST' and mission['status'] == 'Bidding' and not bid_deadline_passed:
         bid_amount = request.form.get('bid_amount')
-
         # Insert bid into database
-        cursor.execute('INSERT INTO bid (bid_amount, bid_date, status, company_id, mission_id) VALUES (%s, CURRENT_DATE(), %s, %s, %s)',
-                       (bid_amount, 'Submitted', current_company_id, mission_id))
+        cursor.execute('INSERT INTO bid (bid_amount, bid_date, status, company_id, mission_id) VALUES (%s, CURDATE(), %s, %s, %s)',
+                       (bid_amount, 'Submitted', session.get('user_id'), mission_id))
         mysql.connection.commit()
-        flash('Bid submitted successfully!', 'success')
-        return redirect(url_for('main_page'))
+        # Flash success message
+        flash(f'Bid submitted successfully for mission {mission["mission_name"]}!', 'success')
+        return redirect(url_for('mission_details', mission_id=mission_id))
 
-    return render_template('mission_details.html', mission=mission)
+    cursor.close()
+    return render_template('mission_details.html', mission=mission, bid_deadline_passed=bid_deadline_passed)
+
+
+@app.route('/biddings')
+def biddings():
+    if 'loggedin' not in session or 'user_id' not in session:
+        flash('You need to login to view this page.', 'danger')
+        return redirect(url_for('login_company'))
+
+    company_id = session['user_id']
+    cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
+
+    # Fetch missions and their bids
+    cursor.execute("""
+    SELECT sm.mission_id, sm.mission_name, sm.status, b.bid_id, b.bid_amount, b.status AS bid_status, u.name AS bidder_name
+    FROM space_mission sm
+    LEFT JOIN bid b ON sm.mission_id = b.mission_id
+    LEFT JOIN User u ON b.company_id = u.user_id
+    WHERE sm.creator_comp_id = %s
+    ORDER BY sm.mission_id, b.bid_date DESC
+    """, (company_id,))
+
+    missions = {}
+    for row in cursor.fetchall():
+        if row['mission_id'] not in missions:
+            missions[row['mission_id']] = {
+                'mission_name': row['mission_name'],
+                'status': row['status'],
+                'bids': []
+            }
+        if row['bid_id']:
+            missions[row['mission_id']]['bids'].append({
+                'bid_id': row['bid_id'],
+                'bid_amount': row['bid_amount'],
+                'bid_status': row['bid_status'],
+                'bidder_name': row['bidder_name']
+            })
+
+    cursor.close()
+    return render_template('biddings.html', missions=missions)
+
+@app.route('/handle_bid/<int:bid_id>/<int:mission_id>', methods=['POST'])
+def handle_bid(bid_id, mission_id):
+    if 'loggedin' not in session:
+        return redirect(url_for('login_company'))
+
+    cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
+
+    # Fetch the accepted bid details
+    cursor.execute("SELECT company_id, bid_amount FROM bid WHERE bid_id = %s", (bid_id,))
+    bid = cursor.fetchone()
+
+    if not bid:
+        flash('Bid not found!', 'danger')
+        return redirect(url_for('biddings'))
+
+    # Fetch mission creator's company_id
+    cursor.execute("SELECT creator_comp_id FROM space_mission WHERE mission_id = %s", (mission_id,))
+    mission = cursor.fetchone()
+
+    if not mission:
+        flash('Mission not found!', 'danger')
+        return redirect(url_for('biddings'))
+
+    # Update mission status
+    #cursor.execute("UPDATE space_mission SET status = 'In Progress' WHERE mission_id = %s", (mission_id,))
+
+    # Update mission status and manager
+    cursor.execute("""
+        UPDATE space_mission 
+        SET status = 'In Progress', manager_comp_id = %s 
+        WHERE mission_id = %s
+    """, (bid['company_id'], mission_id,))
+
+
+    # Update accepted bid
+    cursor.execute("UPDATE bid SET status = 'Accepted' WHERE bid_id = %s", (bid_id,))
+
+    # Reject other bids
+    cursor.execute("UPDATE bid SET status = 'Rejected' WHERE mission_id = %s AND bid_id != %s", (mission_id, bid_id))
+
+    # Create financial transaction
+    cursor.execute("""
+        INSERT INTO financial_transaction (date, type, amount, status, description, payer_comp, payee_comp, mission_id)
+        VALUES (CURDATE(), 'Bid Payment', %s, 'Completed', 'Payment for mission bid', %s, %s, %s)
+    """, (bid['bid_amount'], bid['company_id'], mission['creator_comp_id'], mission_id))
+
+    mysql.connection.commit()
+    cursor.close()
+
+    flash('Bid accepted, mission updated, and payment processed!', 'success')
+    return redirect(url_for('biddings'))
+
+
 
 
 @app.route('/main')

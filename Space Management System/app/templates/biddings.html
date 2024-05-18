@@ -1,0 +1,43 @@
+{% extends "layout.html" %}
+
+{% block content %}
+<div class="container mt-5">
+    <h2>Your Missions and Bids</h2>
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        {% for category, message in messages %}
+          <div class="alert alert-{{ category }}">{{ message }}</div>
+        {% endfor %}
+      {% endif %}
+    {% endwith %}
+
+    {% if missions %}
+        {% for mission_id, mission in missions.items() %}
+        <div class="card mb-3">
+            <div class="card-header">
+                {{ mission.mission_name }} (Status: {{ mission.status }})
+            </div>
+            <ul class="list-group list-group-flush">
+                {% if mission.bids %}
+                    {% for bid in mission.bids %}
+                    <li class="list-group-item">
+                        Bid by {{ bid.bidder_name }}: ${{ bid.bid_amount }} - Status: {{ bid.bid_status }}
+                        {% if mission.status == 'Bidding' %}
+                        <form method="post" action="{{ url_for('handle_bid', bid_id=bid.bid_id, mission_id=mission_id) }}">
+                            <button type="submit" class="btn btn-success btn-sm">Accept</button>
+                        </form>
+                        {% endif %}
+                    </li>
+                    {% endfor %}
+                {% else %}
+                    <li class="list-group-item">No bids received yet.</li>
+                {% endif %}
+            </ul>
+        </div>
+        {% endfor %}
+    {% else %}
+        <p>No missions found.</p>
+    {% endif %}
+</div>
+{% endblock %}
