@@ -95,7 +95,7 @@ def missions():
     try:
         cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
         query = """
-            SELECT mission_name, description, status, launch_date, destination, cost, duration, crew_size 
+            SELECT mission_id, mission_name, description, status, launch_date, destination, cost, duration, crew_size 
             FROM space_mission
         """
         cursor.execute(query)
@@ -106,6 +106,62 @@ def missions():
         cursor.close()
     
     return render_template('missions.html', missions=missions)
+
+
+@app.route('/mission/<int:mission_id>', methods=['GET', 'POST'])
+def mission_details(mission_id):
+    cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
+
+    # Fetch mission details
+    cursor.execute('SELECT * FROM space_mission WHERE mission_id = %s', (mission_id,))
+    mission = cursor.fetchone()
+
+    if not mission:
+        flash('Mission not found!', 'error')
+        return redirect(url_for('main_page'))
+
+    # Check if bidding is allowed for the mission
+    if mission['status'] != 'Bidding':
+        flash('Bidding is not allowed for this mission!', 'error')
+        return redirect(url_for('main_page'))
+
+    # Check if the bidding deadline has passed
+    cursor.execute('SELECT COUNT(*) AS is_deadline_passed FROM space_mission WHERE mission_id = %s AND bid_deadline < CURRENT_DATE()', (mission_id,))
+    deadline_check = cursor.fetchone()
+
+    if deadline_check['is_deadline_passed'] > 0:
+        flash('Bidding deadline has passed!', 'error')
+        return redirect(url_for('main_page'))
+
+    # Check if company has any conflicting missions
+    current_company_id = session.get('user_id')  # Assuming company ID is stored in session
+    cursor.execute('''
+        SELECT COUNT(*) AS existing_missions
+        FROM space_mission
+        WHERE company_id = %s
+        AND (
+            (launch_date < %s AND DATE_ADD(launch_date, INTERVAL duration DAY) > %s)
+            OR (launch_date BETWEEN %s AND %s)
+        )
+    ''', (current_company_id, mission['launch_date'], mission['launch_date'], mission['launch_date'], mission['launch_date']))
+    conflict_check = cursor.fetchone()
+
+    if conflict_check['existing_missions'] > 0:
+        flash('Company has conflicting missions!', 'error')
+        return redirect(url_for('main_page'))
+
+    # Handle bidding form submission
+    if request.method == 'POST':
+        bid_amount = request.form.get('bid_amount')
+
+        # Insert bid into database
+        cursor.execute('INSERT INTO bid (bid_amount, bid_date, status, company_id, mission_id) VALUES (%s, CURRENT_DATE(), %s, %s, %s)',
+                       (bid_amount, 'Submitted', current_company_id, mission_id))
+        mysql.connection.commit()
+        flash('Bid submitted successfully!', 'success')
+        return redirect(url_for('main_page'))
+
+    return render_template('mission_details.html', mission=mission)
 
 
 @app.route('/main')
