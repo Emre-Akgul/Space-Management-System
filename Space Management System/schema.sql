@@ -166,3 +166,47 @@ CREATE TABLE mission_feedback (
 	FOREIGN KEY (mission_id) REFERENCES space_mission(mission_id),
 	FOREIGN KEY (feedback_giver) REFERENCES User(user_id)
 );
+
+CREATE TABLE owns (
+    company_id INT,
+    spaceship_id INT,
+    PRIMARY KEY (company_id, spaceship_id),
+    FOREIGN KEY (company_id) REFERENCES Company(user_id),
+    FOREIGN KEY (spaceship_id) REFERENCES Spaceship(spaceship_id)
+);
+
+INSERT INTO User (user_id, username, name, password, email) VALUES 
+(1, 'companyA', 'Company A', 'pass1', 'companya@example.com'), 
+(2, 'companyB', 'Company B', 'pass2', 'companyb@example.com'), 
+(3, 'companyC', 'Company C', 'pass3', 'companyc@example.com');
+
+-- Insert corresponding entries into the Company table
+INSERT INTO Company (user_id, address, industry_sector, website) VALUES 
+(1, '123 Space Way', 'Aerospace', 'https://companyA.com'), 
+(2, '456 Galaxy Road', 'Aerospace', 'https://companyB.com'), 
+(3, '789 Star Blvd', 'Aerospace', 'https://companyC.com');
+
+-- Inserting sample data into launch_vehicle table 
+INSERT INTO launch_vehicle (launch_vehicle_name, model, status, launch_site) 
+VALUES 
+('Falcon 9', 'Block 5', 'Operational', 'Cape Canaveral'), 
+('Delta IV Heavy', 'Heavy', 'Operational', 'Vandenberg'), 
+('Atlas V', '401', 'Operational', 'Cape Canaveral'), 
+('Starship', 'Mk1', 'Testing', 'Boca Chica'), 
+('New Glenn', 'Rocket', 'In Development', 'Cape Canaveral'); 
+ 
+-- Inserting sample data into Spaceship table 
+INSERT INTO Spaceship (spaceship_name, type, status, capacity, owner_comp_id, launch_vehicle_id) 
+VALUES 
+('Spaceship Alpha', 'Exploration', 'Active', 10, 1, 1), 
+('Spaceship Beta', 'Mining', 'Active', 15, 2, 2), 
+('Spaceship Gamma', 'Research', 'Active', 20, 3, 3), 
+('Spaceship Delta', 'Mapping', 'Active', 8, 1, 4), 
+('Spaceship Epsilon', 'Tourism', 'Active', 5, 2, 5); 
+
+INSERT INTO owns (company_id, spaceship_id) VALUES 
+(1, 1),  -- Company A owns Spaceship Alpha
+(2, 2),  -- Company B owns Spaceship Beta
+(3, 3),  -- Company C owns Spaceship Gamma
+(1, 4),  -- Company A owns Spaceship Delta
+(2, 5);  -- Company B owns Spaceship Epsilon

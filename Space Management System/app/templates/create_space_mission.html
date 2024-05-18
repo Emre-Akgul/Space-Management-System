@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>Create Space Mission</title>
+	<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+	<style>
+		body {
+			background-color: #f8f9fa;
+		}
+		.form-container {
+			background-color: #ffffff;
+			border-radius: 8px;
+			box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+			padding: 20px;
+			margin: 20px auto;
+			max-width: 600px;
+		}
+		.form-container h2 {
+			color: #007bff;
+		}
+		.btn-primary {
+			background-color: #007bff;
+			border-color: #007bff;
+		}
+		.btn-primary:hover {
+			background-color: #0056b3;
+			border-color: #0056b3;
+		}
+		.btn-secondary {
+			background-color: #6c757d;
+			border-color: #6c757d;
+		}
+		.btn-secondary:hover {
+			background-color: #5a6268;
+			border-color: #545b62;
+		}
+		.alert {
+			margin-top: 20px;
+		}
+	</style>
+</head>
+<body>
+	<div class="container">
+		<div class="form-container">
+			<h2>Create Space Mission</h2>
+			{% with messages = get_flashed_messages(with_categories=true) %}
+				{% if messages %}
+					{% for category, message in messages %}
+						<div class="alert alert-{{ category }}">{{ message }}</div>
+					{% endfor %}
+				{% endif %}
+			{% endwith %}
+			<form method="POST">
+				<div class="form-group">
+					<label for="mission_name">Mission Name:</label>
+					<input type="text" id="mission_name" name="mission_name" class="form-control" required>
+				</div>
+				<div class="form-group">
+					<label for="description">Description:</label>
+					<textarea id="description" name="description" class="form-control" rows="4" required></textarea>
+				</div>
+				<div class="form-group">
+					<label for="launch_date">Launch Date:</label>
+					<input type="date" id="launch_date" name="launch_date" class="form-control" required>
+				</div>
+				<div class="form-group">
+					<label for="destination">Destination:</label>
+					<input type="text" id="destination" name="destination" class="form-control" required>
+				</div>
+				<div class="form-group">
+					<label for="cost">Cost:</label>
+					<input type="number" id="cost" name="cost" class="form-control" required>
+				</div>
+				<div class="form-group">
+					<label for="duration">Duration (in days):</label>
+					<input type="number" id="duration" name="duration" class="form-control" required>
+				</div>
+				<div class="form-group">
+					<label for="crew_size">Crew Size:</label>
+					<input type="number" id="crew_size" name="crew_size" class="form-control" required>
+				</div>
+				<div class="form-group">
+					<label for="required_roles">Required Roles:</label>
+					<input type="text" id="required_roles" name="required_roles" class="form-control" required>
+				</div>
+				<div class="form-group">
+					<label for="bid_deadline">Bid Deadline:</label>
+					<input type="date" id="bid_deadline" name="bid_deadline" class="form-control" required>
+				</div>
+				<div class="d-flex justify-content-between">
+					<button type="submit" class="btn btn-primary">Create Mission</button>
+					<a href="{{ url_for('main_page') }}" class="btn btn-secondary">Go Back</a>
+				</div>
+			</form>
+		</div>
+	</div>
+	<script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+	<script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.3/dist/umd/popper.min.js"></script>
+	<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+</body>
+</html>

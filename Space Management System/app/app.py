@@ -1,4 +1,5 @@
 
+from datetime import datetime
 import re  
 import os
 from flask import Flask, render_template, request, redirect, url_for, session, flash
@@ -129,6 +130,83 @@ def logout():
     flash('You have been logged out.', 'success')
     
     return redirect(url_for('login_company'))
+
+@app.route('/create_space_mission', methods=['GET', 'POST'])
+def create_space_mission():
+	if 'loggedin' in session:
+		if request.method == 'POST':
+			mission_name = request.form.get('mission_name')
+			description = request.form.get('description')
+			launch_date = request.form.get('launch_date')
+			destination = request.form.get('destination')
+			cost = request.form.get('cost')
+			duration = request.form.get('duration')
+			crew_size = request.form.get('crew_size')
+			required_roles = request.form.get('required_roles')
+			bid_deadline = request.form.get('bid_deadline')
+			creator_comp_id = session['userid']
+			status = 'Bidding'
+
+			if not (mission_name and description and launch_date and destination and cost and duration and crew_size and required_roles and bid_deadline):
+				flash('Please fill out all required fields!', 'danger')
+				return redirect(url_for('create_space_mission'))
+
+			if len(mission_name) > 255:
+				flash('Mission name exceeds maximum length (255 characters)!', 'danger')
+				return redirect(url_for('create_space_mission'))
+			if len(description) > 4096:
+				flash('Description exceeds maximum length (4096 characters)!', 'danger')
+				return redirect(url_for('create_space_mission'))
+			if len(destination) > 100:
+				flash('Destination exceeds maximum length (100 characters)!', 'danger')
+				return redirect(url_for('create_space_mission'))
+			if len(required_roles) > 255:
+				flash('Required roles exceeds maximum length (255 characters)!', 'danger')
+				return redirect(url_for('create_space_mission'))
+
+			try:
+				bid_deadline = datetime.strptime(bid_deadline, '%Y-%m-%d')
+				launch_date = datetime.strptime(launch_date, '%Y-%m-%d')
+			except ValueError:
+				flash('Invalid date format! Please use YYYY-MM-DD.', 'danger')
+				return redirect(url_for('create_space_mission'))
+
+			if bid_deadline <= datetime.now():
+				flash('Bid deadline must be in the future!', 'danger')
+				return redirect(url_for('create_space_mission'))
+
+			if launch_date <= bid_deadline:
+				flash('Launch date must be after the bid deadline!', 'danger')
+				return redirect(url_for('create_space_mission'))
+
+			cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
+			cursor.execute('INSERT INTO space_mission (mission_name, description, status, launch_date, destination, cost, duration, crew_size, required_roles, bid_deadline, creator_comp_id) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)',
+						(mission_name, description, status, launch_date, destination, cost, duration, crew_size, required_roles, bid_deadline, creator_comp_id))
+			mysql.connection.commit()
+
+			flash('Space mission created successfully!', 'success')
+			return redirect(url_for('main_page'))
+
+		companies, spaceships = get_companies_and_spaceships()
+		return render_template('create_space_mission.html', companies=companies, spaceships=spaceships)
+	else:
+		return redirect(url_for('login_company'))
+
+def get_companies_and_spaceships():
+	cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
+
+	cursor.execute('''
+		SELECT Company.user_id, User.username AS name 
+		FROM Company 
+		JOIN User ON Company.user_id = User.user_id
+	''')
+	companies = cursor.fetchall()
+
+	user_id = session['userid']
+	cursor.execute('SELECT spaceship_id, spaceship_name FROM Spaceship WHERE owner_comp_id = %s', (user_id,))
+	spaceships = cursor.fetchall()
+
+	return companies, spaceships
 
 if __name__ == "__main__":
     port = int(os.environ.get('PORT', 5000))
