@@ -166,6 +166,7 @@ CREATE TABLE mission_feedback (
 	FOREIGN KEY (mission_id) REFERENCES space_mission(mission_id),
 	FOREIGN KEY (feedback_giver) REFERENCES User(user_id)
 );
+ALTER TABLE Spaceship CONVERT TO CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
 -- Inserting sample data into User table
 INSERT INTO User (username, name, password, email)

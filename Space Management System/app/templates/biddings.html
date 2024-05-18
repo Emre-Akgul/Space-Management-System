@@ -37,7 +37,9 @@
         </div>
         {% endfor %}
     {% else %}
-        <p>No missions found.</p>
+        <div class="alert alert-info" role="alert">
+            No missions found.
+        </div>
     {% endif %}
 </div>
 {% endblock %}

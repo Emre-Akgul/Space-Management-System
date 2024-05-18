@@ -330,6 +330,52 @@ def allocate_spaceship(mission_id):
     flash('Spaceship allocated successfully!', 'success')
     return redirect(url_for('managed_missions'))
 
+@app.route('/my_ships')
+def my_ships():
+    if 'loggedin' not in session:
+        return redirect(url_for('login_company'))
+
+    owner_id = session['user_id']
+    cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
+    cursor.execute("SELECT spaceship_id, spaceship_name, type, status FROM Spaceship WHERE owner_comp_id = %s", (owner_id,))
+    ships = cursor.fetchall()
+    cursor.close()
+    return render_template('my_ships.html', ships=ships)
+
+@app.route('/retire_ship/<int:spaceship_id>', methods=['POST'])
+def retire_ship(spaceship_id):
+    cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
+    cursor.execute("UPDATE Spaceship SET status = 'Retired' WHERE spaceship_id = %s", (spaceship_id,))
+    mysql.connection.commit()
+    cursor.close()
+    flash('Ship has been retired successfully.', 'success')
+    return redirect(url_for('my_ships'))
+
+@app.route('/add_ship', methods=['POST'])
+def add_ship():
+    if 'loggedin' not in session:
+        return redirect(url_for('login_company'))
+
+    owner_id = session['user_id']
+    spaceship_name = request.form.get('spaceship_name')
+    type = request.form.get('type')
+    capacity = request.form.get('capacity')
+    launch_vehicle_id = request.form.get('launch_vehicle_id')  # Assuming this is optional
+
+    if not (spaceship_name and type and capacity):
+        flash('All fields are required except launch vehicle.', 'danger')
+        return redirect(url_for('my_ships'))
+
+    cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
+    cursor.execute("INSERT INTO Spaceship (spaceship_name, type, status, capacity, owner_comp_id, launch_vehicle_id) VALUES (%s, %s, 'Active', %s, %s, %s)", 
+                   (spaceship_name, type, capacity, owner_id, launch_vehicle_id if launch_vehicle_id else None))
+    mysql.connection.commit()
+    cursor.close()
+
+    flash('New ship added to inventory.', 'success')
+    return redirect(url_for('my_ships'))
+
+
 
 @app.route('/main')
 def main_page():
