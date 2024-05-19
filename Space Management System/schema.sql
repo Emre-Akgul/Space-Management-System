@@ -103,16 +103,30 @@ CREATE TABLE Company (
 	FOREIGN KEY (user_id) REFERENCES User(user_id)
 );
 
-CREATE TABLE Astronaut (
-	user_id INT PRIMARY KEY,
-	company_id INT,
-	date_of_birth DATE,
-	nationality VARCHAR(40) NOT NULL,
-	experience_level VARCHAR(40),
-	preferred_role VARCHAR(40),
-	FOREIGN KEY (user_id) REFERENCES User(user_id),
-	FOREIGN KEY (company_id) REFERENCES Company(user_id)
+CREATE TABLE Role (
+    role_id INT AUTO_INCREMENT PRIMARY KEY,
+    role_name VARCHAR(50) NOT NULL
 );
+
+CREATE TABLE Astronaut (
+    user_id INT PRIMARY KEY,
+    company_id INT,
+    date_of_birth DATE,
+    nationality VARCHAR(40) NOT NULL,
+    experience_level VARCHAR(40),
+    role_id INT,
+    FOREIGN KEY (user_id) REFERENCES User(user_id),
+    FOREIGN KEY (company_id) REFERENCES Company(user_id),
+    FOREIGN KEY (role_id) REFERENCES Role(role_id)
+);
+
+INSERT INTO Role (role_name) VALUES
+('Not Assigned'),
+('Commander'),
+('Pilot'),
+('Mission Specialist'),
+('Flight Engineer'),
+('Medical Doctor');
 
 CREATE TABLE participates (
 	astronaut_id INT,

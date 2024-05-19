@@ -485,11 +485,12 @@ def all_astronauts():
     cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
     cursor.execute('''
         SELECT User.user_id, User.username, User.name, User.email, Astronaut.date_of_birth, 
-               Astronaut.nationality, Astronaut.experience_level, Astronaut.preferred_role, 
+               Astronaut.nationality, Astronaut.experience_level, Role.role_name AS preferred_role, 
                Company.address, Company.industry_sector, Company.website
         FROM User 
         JOIN Astronaut ON User.user_id = Astronaut.user_id 
         LEFT JOIN Company ON Astronaut.company_id = Company.user_id
+        LEFT JOIN Role ON Astronaut.role_id = Role.role_id
     ''')
     astronauts = cursor.fetchall()
     return render_template('all_astronauts.html', astronauts=astronauts)
@@ -501,11 +502,12 @@ def astronaut_profile(user_id):
     # Fetch astronaut details
     cursor.execute('''
         SELECT User.user_id, User.username, User.name, User.email, Astronaut.date_of_birth, 
-               Astronaut.nationality, Astronaut.experience_level, Astronaut.preferred_role, 
+               Astronaut.nationality, Astronaut.experience_level, Role.role_name AS preferred_role, 
                Company.address, Company.industry_sector, Company.website
         FROM User 
         JOIN Astronaut ON User.user_id = Astronaut.user_id 
         LEFT JOIN Company ON Astronaut.company_id = Company.user_id
+        LEFT JOIN Role ON Astronaut.role_id = Role.role_id
         WHERE User.user_id = %s
     ''', (user_id,))
     astronaut = cursor.fetchone()
@@ -557,9 +559,6 @@ def astronaut_profile(user_id):
     return render_template('astronaut_profile.html', astronaut=astronaut, 
                            past_missions=past_missions, upcoming_missions=upcoming_missions,
                            health_records=health_records, training_records=training_records)
-
-
-
 
 
 if __name__ == "__main__":
