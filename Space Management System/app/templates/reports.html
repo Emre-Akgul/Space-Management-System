@@ -1,0 +1,80 @@
+{% extends "layout.html" %}
+
+{% block content %}
+<div class="container mt-5">
+    <h1 class="mb-4">System Reports</h1>
+    <a href="{{ url_for('mission_bid_summary') }}" class="btn btn-primary">Mission Bid Summary</a>
+    <div class="list-group">
+        <a href="#" class="list-group-item list-group-item-action flex-column align-items-start">
+            <div class="d-flex w-100 justify-content-between">
+                <h5 class="mb-1">Most Expensive Mission</h5>
+                <small>${{ most_expensive_mission.cost if most_expensive_mission else 'No data available' }}</small>
+            </div>
+            <p class="mb-1">{{ most_expensive_mission.mission_name if most_expensive_mission else 'No data available' }}</p>
+        </a>
+        <a href="#" class="list-group-item list-group-item-action flex-column align-items-start">
+            <div class="d-flex w-100 justify-content-between">
+                <h5 class="mb-1">Company with Most Ships</h5>
+                <small>{{ company_with_most_ships.ship_count if company_with_most_ships else 'No data available' }}</small>
+            </div>
+            <p class="mb-1">{{ company_with_most_ships.name if company_with_most_ships else 'No data available' }}</p>
+        </a>
+        <a href="#" class="list-group-item list-group-item-action flex-column align-items-start">
+            <div class="d-flex w-100 justify-content-between">
+                <h5 class="mb-1">Longest Mission</h5>
+                <small>{{ longest_mission.duration if longest_mission else 'No data available' }} days</small>
+            </div>
+            <p class="mb-1">{{ longest_mission.mission_name if longest_mission else 'No data available' }}</p>
+        </a>
+        <a href="#" class="list-group-item list-group-item-action flex-column align-items-start">
+            <div class="d-flex w-100 justify-content-between">
+                <h5 class="mb-1">Mission with Most Astronauts</h5>
+                <small>{{ mission_with_most_astronauts.astronaut_count if mission_with_most_astronauts else 'No data available' }}</small>
+            </div>
+            <p class="mb-1">{{ mission_with_most_astronauts.mission_name if mission_with_most_astronauts else 'No data available' }}</p>
+        </a>
+        <a href="#" class="list-group-item list-group-item-action flex-column align-items-start">
+            <div class="d-flex w-100 justify-content-between">
+                <h5 class="mb-1">Most Active Astronaut</h5>
+                <small>{{ most_active_astronaut.missions_participated if most_active_astronaut else 'No data available' }}</small>
+            </div>
+            <p class="mb-1">{{ most_active_astronaut.name if most_active_astronaut else 'No data available' }}</p>
+        </a>
+        <a href="#" class="list-group-item list-group-item-action flex-column align-items-start">
+            <div class="d-flex w-100 justify-content-between">
+                <h5 class="mb-1">Highest Bidder</h5>
+                <small>${{ highest_bidder.highest_bid if highest_bidder else 'No data available' }}</small>
+            </div>
+            <p class="mb-1">{{ highest_bidder.name if highest_bidder else 'No data available' }}</p>
+        </a>
+        <a href="#" class="list-group-item list-group-item-action flex-column align-items-start">
+            <div class="d-flex w-100 justify-content-between">
+                <h5 class="mb-1">Most Frequent Destination</h5>
+                <small>{{ most_frequent_destination.mission_count if most_frequent_destination else 'No data available' }}</small>
+            </div>
+            <p class="mb-1">{{ most_frequent_destination.destination if most_frequent_destination else 'No data available' }}</p>
+        </a>
+        <a href="#" class="list-group-item list-group-item-action flex-column align-items-start">
+            <div class="d-flex w-100 justify-content-between">
+                <h5 class="mb-1">Most Used Launch Vehicle</h5>
+                <small>{{ most_used_launch_vehicle.usage_count if most_used_launch_vehicle else 'No data available' }}</small>
+            </div>
+            <p class="mb-1">{{ most_used_launch_vehicle.launch_vehicle_name if most_used_launch_vehicle else 'No data available' }}</p>
+        </a>
+        <a href="#" class="list-group-item list-group-item-action flex-column align-items-start">
+            <div class="d-flex w-100 justify-content-between">
+                <h5 class="mb-1">Company with Highest Total Mission Cost</h5>
+                <small>${{ company_with_highest_total_mission_cost.total_cost if company_with_highest_total_mission_cost else 'No data available' }}</small>
+            </div>
+            <p class="mb-1">{{ company_with_highest_total_mission_cost.name if company_with_highest_total_mission_cost else 'No data available' }}</p>
+        </a>
+        <a href="#" class="list-group-item list-group-item-action flex-column align-items-start">
+            <div class="d-flex w-100 justify-content-between">
+                <h5 class="mb-1">Most Successful Missions (completed)</h5>
+                <small>{{ most_successful_missions.completed_missions if most_successful_missions else 'No data available' }}</small>
+            </div>
+            <p class="mb-1">{{ most_successful_missions.name if most_successful_missions else 'No data available' }}</p>
+        </a>
+    </div>
+</div>
+{% endblock %}

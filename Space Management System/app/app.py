@@ -741,6 +741,155 @@ def change_role(user_id):
     return redirect(url_for('astronaut_profile', user_id=user_id))
 
 
+@app.route('/reports')
+def reports():
+    if 'loggedin' not in session or 'admin' not in session:
+        flash('You must be logged in as an admin to view this page.')
+        return redirect(url_for('login_admin'))
+
+    cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
+
+    # Most Expensive Mission
+    cursor.execute("""
+        SELECT mission_name, cost FROM space_mission ORDER BY cost DESC LIMIT 1
+    """)
+    most_expensive_mission = cursor.fetchone()
+
+    # Company with Most Ships (excluding admins)
+    cursor.execute("""
+        SELECT u.name, COUNT(*) AS ship_count
+        FROM Spaceship s
+        JOIN User u ON s.owner_comp_id = u.user_id
+        LEFT JOIN Admin a ON u.user_id = a.user_id
+        WHERE a.user_id IS NULL
+        GROUP BY s.owner_comp_id
+        ORDER BY ship_count DESC LIMIT 1
+    """)
+    company_with_most_ships = cursor.fetchone()
+
+    # Longest Mission
+    cursor.execute("""
+        SELECT mission_name, duration FROM space_mission ORDER BY duration DESC LIMIT 1
+    """)
+    longest_mission = cursor.fetchone()
+
+    # Mission with Most Astronauts
+    cursor.execute("""
+        SELECT m.mission_name, COUNT(p.astronaut_id) AS astronaut_count
+        FROM participates p
+        JOIN space_mission m ON p.mission_id = m.mission_id
+        GROUP BY p.mission_id
+        ORDER BY astronaut_count DESC LIMIT 1
+    """)
+    mission_with_most_astronauts = cursor.fetchone()
+
+    # Most Active Astronaut
+    cursor.execute("""
+        SELECT u.name, COUNT(*) AS missions_participated
+        FROM participates p
+        JOIN User u ON p.astronaut_id = u.user_id
+        GROUP BY p.astronaut_id
+        ORDER BY missions_participated DESC LIMIT 1
+    """)
+    most_active_astronaut = cursor.fetchone()
+
+    # Highest Bidder
+    cursor.execute("""
+        SELECT u.name, MAX(b.bid_amount) AS highest_bid
+        FROM bid b
+        JOIN User u ON b.company_id = u.user_id
+        GROUP BY b.company_id
+        ORDER BY highest_bid DESC LIMIT 1
+    """)
+    highest_bidder = cursor.fetchone()
+
+    # Most Frequent Destination
+    cursor.execute("""
+        SELECT destination, COUNT(*) AS mission_count
+        FROM space_mission
+        GROUP BY destination
+        ORDER BY mission_count DESC LIMIT 1
+    """)
+    most_frequent_destination = cursor.fetchone()
+
+    # Most Used Launch Vehicle
+    cursor.execute("""
+        SELECT l.launch_vehicle_name, COUNT(*) AS usage_count
+        FROM Spaceship s
+        JOIN launch_vehicle l ON s.launch_vehicle_id = l.launch_vehicle_id
+        GROUP BY l.launch_vehicle_id
+        ORDER BY usage_count DESC LIMIT 1
+    """)
+    most_used_launch_vehicle = cursor.fetchone()
+
+   # Company with Highest Total Mission Cost (excluding admins)
+    cursor.execute("""
+        SELECT u.name, SUM(m.cost) AS total_cost
+        FROM space_mission m
+        JOIN User u ON m.creator_comp_id = u.user_id
+        LEFT JOIN Admin a ON u.user_id = a.user_id
+        WHERE a.user_id IS NULL
+        GROUP BY m.creator_comp_id
+        ORDER BY total_cost DESC LIMIT 1
+    """)
+    company_with_highest_total_mission_cost = cursor.fetchone()
+
+    # Most Successful Missions (completed, excluding admins)
+    cursor.execute("""
+        SELECT u.name, COUNT(*) AS completed_missions
+        FROM space_mission m
+        JOIN User u ON m.creator_comp_id = u.user_id
+        LEFT JOIN Admin a ON u.user_id = a.user_id
+        WHERE m.status = 'Completed' AND a.user_id IS NULL
+        GROUP BY m.creator_comp_id
+        ORDER BY completed_missions DESC LIMIT 1
+    """)
+    most_successful_missions = cursor.fetchone()
+
+    cursor.close()
+
+    return render_template('reports.html', 
+        most_expensive_mission=most_expensive_mission,
+        company_with_most_ships=company_with_most_ships,
+        longest_mission=longest_mission,
+        mission_with_most_astronauts=mission_with_most_astronauts,
+        most_active_astronaut=most_active_astronaut,
+        highest_bidder=highest_bidder,
+        most_frequent_destination=most_frequent_destination,
+        most_used_launch_vehicle=most_used_launch_vehicle,
+        company_with_highest_total_mission_cost=company_with_highest_total_mission_cost,
+        most_successful_missions=most_successful_missions
+    )
+@app.route('/mission_bid_summary')
+def mission_bid_summary():
+    if 'loggedin' not in session or 'admin' not in session:
+        flash('You must be logged in as an admin to view this page.')
+        return redirect(url_for('login_admin'))
+
+    cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
+
+    # Fetch data from the simplified MissionSummary view
+    cursor.execute("SELECT * FROM MissionSummary")
+    mission_summary = [{
+        'mission_name': row['mission_name'],
+        'status': row['status'],
+        'launch_date': row['launch_date'],
+        'cost': "{:.2f}".format(row['cost']) if row['cost'] is not None else 'No data'
+    } for row in cursor.fetchall()]
+
+    # Fetch data from the simplified BidSummary view
+    cursor.execute("SELECT * FROM BidSummary")
+    bid_summary = [{
+        'bidder_name': row['bidder_name'],
+        'mission_name': row['mission_name'],
+        'bid_amount': "{:.2f}".format(row['bid_amount']) if row['bid_amount'] is not None else 'No data'
+    } for row in cursor.fetchall()]
+
+    cursor.close()
+
+    return render_template('mission_bid_summary.html', mission_summary=mission_summary, bid_summary=bid_summary)
+
+
 if __name__ == "__main__":
     port = int(os.environ.get('PORT', 5000))
     app.run(debug=True, host='0.0.0.0', port=port)

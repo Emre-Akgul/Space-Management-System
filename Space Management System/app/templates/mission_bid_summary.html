@@ -1,0 +1,61 @@
+{% extends "layout.html" %}
+
+{% block content %}
+<div class="container mt-5">
+    <h1 class="mb-4">Mission and Bid Summaries</h1>
+
+    <h2>Mission Summary</h2>
+    <div class="table-responsive">
+        <table class="table table-hover">
+            <thead>
+                <tr>
+                    <th>Mission Name</th>
+                    <th>Status</th>
+                    <th>Launch Date</th>
+                    <th>Cost ($)</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for mission in mission_summary %}
+                <tr>
+                    <td>{{ mission.mission_name }}</td>
+                    <td>{{ mission.status }}</td>
+                    <td>{{ mission.launch_date }}</td>
+                    <td>${{ mission.cost }}</td>
+                </tr>
+                {% else %}
+                <tr>
+                    <td colspan="4">No mission data available.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <h2>Bid Summary</h2>
+    <div class="table-responsive">
+        <table class="table table-hover">
+            <thead>
+                <tr>
+                    <th>Bidder Name</th>
+                    <th>Mission Name</th>
+                    <th>Bid Amount ($)</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for bid in bid_summary %}
+                <tr>
+                    <td>{{ bid.bidder_name }}</td>
+                    <td>{{ bid.mission_name }}</td>
+                    <td>${{ bid.bid_amount }}</td>
+                </tr>
+                {% else %}
+                <tr>
+                    <td colspan="3">No bid data available.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

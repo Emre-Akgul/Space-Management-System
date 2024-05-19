@@ -204,6 +204,33 @@ CREATE TABLE mission_feedback (
 );
 ALTER TABLE Spaceship CONVERT TO CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
+
+CREATE VIEW MissionSummary AS
+SELECT 
+    mission_id,
+    mission_name, 
+    status, 
+    launch_date, 
+    cost
+FROM 
+    space_mission;
+
+
+CREATE VIEW BidSummary AS
+SELECT 
+    b.bid_id,
+    b.bid_amount, 
+    u.name AS bidder_name,
+    m.mission_name
+FROM 
+    bid b
+JOIN 
+    User u ON b.company_id = u.user_id
+JOIN 
+    space_mission m ON b.mission_id = m.mission_id;
+
+
+
 -- Inserting sample data into User table
 INSERT INTO User (username, name, password, email)
 VALUES
@@ -256,3 +283,16 @@ VALUES
 INSERT INTO space_mission (mission_name, description, status, launch_date, destination, cost, duration, crew_size, required_roles, bid_deadline, creator_comp_id, manager_comp_id, spaceship_id)
 VALUES
 ('Mission Epsilon', 'Space tourism around the Moon', 'Scheduled', '2024-10-20', 'Moon', 100000000.00, 14, 4, 'Pilot, Tour Guide', '2024-08-30', 2, 3, 5);
+
+DELIMITER $$
+
+CREATE TRIGGER update_mission_status
+BEFORE UPDATE ON space_mission
+FOR EACH ROW
+BEGIN
+    IF NEW.launch_date <= CURDATE() AND (NEW.status = 'Planned' OR NEW.status = 'Bidding') THEN
+        SET NEW.status = 'In Progress';
+    END IF;
+END$$
+
+DELIMITER ;
