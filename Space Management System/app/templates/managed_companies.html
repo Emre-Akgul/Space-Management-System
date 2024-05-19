@@ -1,0 +1,40 @@
+{% extends "layout.html" %}
+
+{% block content %}
+<div class="container mt-5">
+    <h2>Managed companies</h2>
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            {% for category, message in messages %}
+            <div class="alert alert-{{ category }}">{{ message }}</div>
+            {% endfor %}
+        {% endif %}
+    {% endwith %}
+
+    {% if companies %}
+        {% for company in companies %}
+        <div class="card mb-3">
+            <div class="card-header">
+                company Name: {{ company.username }} (Status: {{ company.permission_level }})
+            </div>
+            <div class="card-body">
+                <ul class="list-group list-group-flush">
+                    <li class="list-group-item"><strong>company ID:</strong> {{ company.user_id }}</li>
+                </ul>
+                <form method="delete" action="{{ url_for('managed_companies', user_id=company.user_id) }}">
+                    <div class="form-group mt-3">
+                        <label for="spaceship">Remove company</label>
+                    </div>
+                    <button type="submit" class="btn btn-primary">Remove</button>
+                </form>
+            </div>
+        </div>
+        {% endfor %}
+    {% else %}
+        <div class="alert alert-info" role="alert">
+            No managed companies available at the moment.
+        </div>
+    {% endif %}
+</div>
+{% endblock %}

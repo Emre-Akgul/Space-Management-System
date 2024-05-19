@@ -30,6 +30,30 @@
                 <li class="nav-item">
                     <a class="nav-link" href="{{ url_for('register_astronaut') }}">Register Astronaut</a>
                 </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="{{ url_for('login_admin') }}">Login Admin</a>
+                </li>
+                {% elif 'admin' in session %}
+                <li class="nav-item">
+                    <a class="nav-link" href="{{ url_for('managed_companies') }}">Managed Companies</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="{{ url_for('managed_astronauts') }}">Managed Astronauts</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="{{ url_for('managed_ships') }}">Managed Ships</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="{{ url_for('managed_missions') }}">Managed Missions</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="{{ url_for('managed_biddings') }}">Managed Biddings</a>
+                </li>
+                    {% if session['admin'] == 'SuperAdmin' %}
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('managed_admins') }}">Managed Admins</a>
+                    </li>
+                    {% endif %}
                 {% else %}
                 <li class="nav-item">
                     <a class="nav-link" href="{{ url_for('missions') }}">Missions</a>

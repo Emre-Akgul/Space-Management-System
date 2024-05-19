@@ -1,0 +1,41 @@
+{% extends "layout.html" %}
+
+{% block content %}
+<div class="container mt-5">
+    <h2>Managed admins</h2>
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            {% for category, message in messages %}
+            <div class="alert alert-{{ category }}">{{ message }}</div>
+            {% endfor %}
+        {% endif %}
+    {% endwith %}
+
+    {% if admins %}
+        {% for admin in admins %}
+        <div class="card mb-3">
+            <div class="card-header">
+                admin Name: {{ admin.username }} (Status: {{ admin.permission_level }})
+            </div>
+            <div class="card-body">
+                <ul class="list-group list-group-flush">
+                    <li class="list-group-item"><strong>admin ID:</strong> {{ admin.user_id }}</li>
+                    <li class="list-group-item"><strong>permission level:</strong> {{ admin.permission_level }}</li>
+                </ul>
+                <form method="delete" action="{{ url_for('managed_admins', user_id=admin.user_id) }}">
+                    <div class="form-group mt-3">
+                        <label for="spaceship">Remove Admin</label>
+                    </div>
+                    <button type="submit" class="btn btn-primary">Remove</button>
+                </form>
+            </div>
+        </div>
+        {% endfor %}
+    {% else %}
+        <div class="alert alert-info" role="alert">
+            No managed admins available at the moment.
+        </div>
+    {% endif %}
+</div>
+{% endblock %}

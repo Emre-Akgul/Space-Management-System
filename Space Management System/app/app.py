@@ -165,6 +165,89 @@ def register_astronaut():
     return render_template('register_astronaut.html', message=message, companies=companies, roles=ROLES)
 
 
+@app.route('/login_admin', methods=['GET', 'POST'])
+def login_admin():
+    if request.method == 'POST':
+        username = request.form.get('username')
+        password = request.form.get('password')
+
+        # Username and password must not be empty
+        if not username or not password:
+            flash('Please enter both username and password!', 'danger')
+            return redirect(url_for('login_admin'))
+
+        cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
+
+        # Corrected SQL query to match the schema you've provided
+        cursor.execute('SELECT User.user_id, User.name, User.password, Admin.permission_level FROM User INNER JOIN Admin ON User.user_id = Admin.user_id WHERE User.username = %s', (username,))
+        
+        user = cursor.fetchone()
+        if user and password == user['password']:
+            session['admin'] = user['permission_level']
+            session['loggedin'] = True
+            session['userid'] = user['user_id'] 
+            session['username'] = user['name']
+            return redirect(url_for('main_page'))
+        else:
+            flash('Incorrect username/password!', 'danger')
+
+    # If unsuccessful then remain in login
+    return render_template('login_admin.html')
+
+@app.route('/managed_admins', methods=['GET', 'DELETE'])
+def managed_admins(user_id):
+    if 'admin' not in session:
+            flash('You need to login as an admin to view this page.', 'danger')
+            return redirect(url_for('login_admin'))
+    elif session['admin'] != 'SuperAdmin':
+        flash('You need to be a superadmin to view this page.', 'danger')
+        return redirect(url_for('main_page'))
+    if request.method == 'DELETE':
+        cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
+        cursor.execute('DELETE FROM Admin WHERE user_id = %s', (user_id,))
+        mysql.connection.commit()
+        return 'Admin deleted successfully'
+    elif request.method == 'GET':
+        cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
+        cursor.execute('SELECT User.user_id, User.username, Admin.permission_level FROM User INNER JOIN Admin ON User.user_id = Admin.user_id')
+        admins = cursor.fetchall()
+        return render_template('managed_admins.html', admins=admins)
+
+@app.route('/managed_companies', methods=['GET', 'POST'])
+def managed_companies():
+    if 'admin' not in session:
+            flash('You need to login as an admin to view this page.', 'danger')
+            return redirect(url_for('login_admin'))
+    elif session['admin'] != 'SuperAdmin':
+        flash('You need to be a superadmin to view this page.', 'danger')
+        return redirect(url_for('main_page'))
+    cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
+    cursor.execute('SELECT * FROM Company INNER JOIN User ON User.user_id = Company.user_id')
+    companies = cursor.fetchall()
+    return render_template('managed_companies.html', companies=companies)
+
+@app.route('/managed_astronauts', methods=['GET', 'POST'])
+def managed_astronauts():
+    cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
+    cursor.execute('SELECT * FROM Astronaut INNER JOIN User ON User.user_id = Astronaut.user_id INNER JOIN Company ON Astronaut.company_id = Company.user_id INNER JOIN Role ON Astronaut.role_id = Role.role_id')
+    astronauts = cursor.fetchall()
+    return render_template('managed_astronauts.html', astronauts=astronauts)
+
+@app.route('/managed_ships', methods=['GET', 'POST'])
+def managed_ships():
+    cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
+    cursor.execute('SELECT * FROM Spaceship INNER JOIN Company ON Spaceship.owner_comp_id = Company.user_id')
+    ships = cursor.fetchall()
+    return render_template('managed_ships.html', ships=ships)
+
+@app.route('/managed_biddings', methods=['GET', 'POST'])
+def managed_biddings():
+    cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
+    cursor.execute('SELECT * FROM bid INNER JOIN space_mission ON bid.mission_id = space_mission.mission_id')
+    bids = cursor.fetchall()
+    return render_template('managed_biddings.html', bids=bids)
+
+
 
 
 @app.route('/missions', methods=['GET'])
@@ -363,6 +446,11 @@ def managed_missions():
         LEFT JOIN Spaceship s ON sm.spaceship_id = s.spaceship_id
         WHERE sm.manager_comp_id = %s
     """, (manager_id,))
+    
+    if 'admin' in session: # Admin can view all missions
+        cursor.execute("""
+            SELECT sm.mission_id, sm.mission_name, sm.status, sm.spaceship_id, sm.creator_comp_id, u.name AS creator_company_name, s.spaceship_name AS allocated_spaceship_name
+        """)
 
     missions = cursor.fetchall()
 
@@ -475,6 +563,8 @@ def logout():
     session.pop('loggedin', None)
     session.pop('userid', None)
     session.pop('username', None)
+    if 'admin' in session:
+        session.pop('admin', None)
 
     # Inform user.
     flash('You have been logged out.', 'success')

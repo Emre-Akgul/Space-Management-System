@@ -95,6 +95,9 @@ CREATE TABLE Admin (
 	FOREIGN KEY (user_id) REFERENCES User(user_id)
 );
 
+Insert into User (username, name, password, email) values ('admin', 'Admin', 'admin', 'admin@admin.com');
+Insert into Admin (user_id, permission_level) values (1, 'SuperAdmin');
+
 CREATE TABLE Company (
 	user_id INT PRIMARY KEY,
 	address VARCHAR(256) NOT NULL,

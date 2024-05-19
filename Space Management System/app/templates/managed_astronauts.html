@@ -1,0 +1,40 @@
+{% extends "layout.html" %}
+
+{% block content %}
+<div class="container mt-5">
+    <h2>Managed astronauts</h2>
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            {% for category, message in messages %}
+            <div class="alert alert-{{ category }}">{{ message }}</div>
+            {% endfor %}
+        {% endif %}
+    {% endwith %}
+
+    {% if astronauts %}
+        {% for astronaut in astronauts %}
+        <div class="card mb-3">
+            <div class="card-header">
+                astronaut Name: {{ astronaut.username }} (Status: {{ astronaut.permission_level }})
+            </div>
+            <div class="card-body">
+                <ul class="list-group list-group-flush">
+                    <li class="list-group-item"><strong>astronaut ID:</strong> {{ astronaut.user_id }}</li>
+                </ul>
+                <form method="delete" action="{{ url_for('managed_astronauts', user_id=astronaut.user_id) }}">
+                    <div class="form-group mt-3">
+                        <label for="spaceship">Remove astronaut</label>
+                    </div>
+                    <button type="submit" class="btn btn-primary">Remove</button>
+                </form>
+            </div>
+        </div>
+        {% endfor %}
+    {% else %}
+        <div class="alert alert-info" role="alert">
+            No managed astronauts available at the moment.
+        </div>
+    {% endif %}
+</div>
+{% endblock %}
