@@ -24,6 +24,12 @@
                 <li class="nav-item">
                     <a class="nav-link" href="{{ url_for('register_company') }}">Register Company</a>
                 </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="{{ url_for('login_astronaut') }}">Login Astronaut</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="{{ url_for('register_astronaut') }}">Register Astronaut</a>
+                </li>
                 {% else %}
                 <li class="nav-item">
                     <a class="nav-link" href="{{ url_for('missions') }}">Missions</a>
