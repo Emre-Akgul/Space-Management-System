@@ -169,8 +169,12 @@ INSERT INTO Training_program (name, description, required_for, difficulty) VALUE
 ('Flight Engineer Advanced Training', 'This is the advanced training program for the flight engineer role.', (SELECT role_id FROM Role WHERE role_name = 'Flight Engineer'), 'Advanced'),
 ('Medical Doctor Essential Training', 'This is the essential training program for the medical doctor role.', (SELECT role_id FROM Role WHERE role_name = 'Medical Doctor'), 'Essential'),
 ('Medical Doctor Intermediate Training', 'This is the intermediate training program for the medical doctor role.', (SELECT role_id FROM Role WHERE role_name = 'Medical Doctor'), 'Intermediate'),
-('Medical Doctor Advanced Training', 'This is the advanced training program for the medical doctor role.', (SELECT role_id FROM Role WHERE role_name = 'Medical Doctor'), 'Advanced');
-
+('Medical Doctor Advanced Training', 'This is the advanced training program for the medical doctor role.', (SELECT role_id FROM Role WHERE role_name = 'Medical Doctor'), 'Advanced'),
+('Space Agriculture Training', 'This advanced training program covers the techniques for growing food in space environments.', (SELECT role_id FROM Role WHERE role_name = 'Not assigned'), 'Advanced'),
+('Spacecraft Maintenance Training', 'This advanced training program covers the maintenance procedures and troubleshooting of spacecraft systems.', (SELECT role_id FROM Role WHERE role_name = 'Not assigned'), 'Advanced'),
+('Robotics Training', 'This advanced training program focuses on the operation and maintenance of robotic systems used in space missions.', (SELECT role_id FROM Role WHERE role_name = 'Not assigned'), 'Advanced'),
+('Space Research Training', 'This advanced training program covers the methodologies and practices for conducting research in space.', (SELECT role_id FROM Role WHERE role_name = 'Not assigned'), 'Advanced'),
+('Space Engineering Training', 'This advanced training program covers the engineering principles and technologies used in space missions.', (SELECT role_id FROM Role WHERE role_name = 'Not assigned'), 'Advanced');
 
 CREATE TABLE astronaut_training (
     astronaut_id INT,
