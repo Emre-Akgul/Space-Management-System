@@ -775,7 +775,7 @@ def apply_training(user_id):
                 # Insert the new training program application
                 cursor.execute('''
                     INSERT INTO astronaut_training (astronaut_id, program_id, completion_date)
-                    VALUES (%s, %s, NULL)
+                    VALUES (%s, %s, CURDATE())
                 ''', (user_id, program_id))
 
                 # Determine the difficulty levels to delete based on the applied program's difficulty
@@ -802,31 +802,31 @@ def apply_training(user_id):
             else:
                 flash('Training program not found', 'danger')
 
-            return redirect(url_for('apply_training', user_id=user_id))
+            return redirect(url_for('astronaut_profile', user_id=user_id))
 
         # Fetch role-based training programs
         cursor.execute('''
-            SELECT tp.program_id, tp.name, tp.description, r.role_name AS required_for, tp.difficulty
-            FROM Training_program tp
-            JOIN Role r ON tp.required_for = r.role_id
-            WHERE tp.difficulty != 'Advanced'
-            AND NOT EXISTS (
-                SELECT 1
-                FROM astronaut_training at
-                JOIN Training_program completed_tp ON at.program_id = completed_tp.program_id
-                WHERE at.astronaut_id = %s
-                AND completed_tp.required_for = tp.required_for
-                AND (
-                    (tp.difficulty = 'Essential' AND completed_tp.difficulty IN ('Intermediate', 'Advanced'))
-                    OR (tp.difficulty = 'Intermediate' AND completed_tp.difficulty = 'Advanced')
-                )
+        SELECT tp.program_id, tp.name, tp.description, r.role_name AS required_for, tp.difficulty
+        FROM Training_program tp
+        JOIN Role r ON tp.required_for = r.role_id
+        WHERE r.role_name != 'Not Assigned'
+        AND NOT EXISTS (
+            SELECT 1
+            FROM astronaut_training at
+            JOIN Training_program completed_tp ON at.program_id = completed_tp.program_id
+            WHERE at.astronaut_id = %s
+            AND completed_tp.required_for = tp.required_for
+            AND (
+                (tp.difficulty = 'Essential' AND completed_tp.difficulty IN ('Intermediate', 'Advanced'))
+                OR (tp.difficulty = 'Intermediate' AND completed_tp.difficulty = 'Advanced')
             )
-            AND tp.program_id NOT IN (
-                SELECT program_id 
-                FROM astronaut_training 
-                WHERE astronaut_id = %s
-            )
-        ''', (user_id, user_id))
+        )
+        AND tp.program_id NOT IN (
+            SELECT program_id 
+            FROM astronaut_training 
+            WHERE astronaut_id = %s
+        )
+    ''', (user_id, user_id))
         role_based_programs = cursor.fetchall()
 
         # Fetch advanced training programs (Not assigned)
