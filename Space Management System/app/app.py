@@ -259,7 +259,7 @@ def mission_details(mission_id):
 
 @app.route('/biddings')
 def biddings():
-    if 'loggedin' not in session or 'user_id' not in session:
+    if 'loggedin' not in session or 'userid' not in session:
         flash('You need to login to view this page.', 'danger')
         return redirect(url_for('login_company'))
 
