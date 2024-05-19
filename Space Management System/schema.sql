@@ -214,7 +214,7 @@ CREATE TABLE uses (
     space_mission_id INT,
     PRIMARY KEY (spaceship_id, space_mission_id),
     FOREIGN KEY (spaceship_id) REFERENCES Spaceship(spaceship_id),
-    FOREIGN KEY (space_mission_id) REFERENCES space_mission(space_mission_id)
+    FOREIGN KEY (space_mission_id) REFERENCES space_mission(mission_id)
 );
 
 INSERT INTO User (user_id, username, name, password, email) VALUES 

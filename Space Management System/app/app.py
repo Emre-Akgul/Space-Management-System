@@ -247,7 +247,7 @@ def mission_details(mission_id):
         bid_amount = request.form.get('bid_amount')
         # Insert bid into database
         cursor.execute('INSERT INTO bid (bid_amount, bid_date, status, company_id, mission_id) VALUES (%s, CURDATE(), %s, %s, %s)',
-                       (bid_amount, 'Submitted', session.get('user_id'), mission_id))
+                       (bid_amount, 'Submitted', session.get('userid'), mission_id))
         mysql.connection.commit()
         # Flash success message
         flash(f'Bid submitted successfully for mission {mission["mission_name"]}!', 'success')
