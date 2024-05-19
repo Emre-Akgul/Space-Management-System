@@ -214,9 +214,9 @@ VALUES
 -- Inserting corresponding data into Company table
 INSERT INTO Company (user_id, address, industry_sector, website)
 VALUES
-(1, '123 Space St, City A', 'Aerospace', 'www.companya.com'),
-(2, '456 Orbit Ave, City B', 'Mining', 'www.companyb.com'),
-(3, '789 Galaxy Blvd, City C', 'Research', 'www.companyc.com');
+(2, '123 Space St, City A', 'Aerospace', 'www.companya.com'),
+(3, '456 Orbit Ave, City B', 'Mining', 'www.companyb.com'),
+(4, '789 Galaxy Blvd, City C', 'Research', 'www.companyc.com');
 
 -- Inserting sample data into launch_vehicle table
 INSERT INTO launch_vehicle (launch_vehicle_name, model, status, launch_site)
