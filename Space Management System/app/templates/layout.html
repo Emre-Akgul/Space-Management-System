@@ -43,6 +43,9 @@
                 <li class="nav-item">
                     <a class="nav-link" href="{{ url_for('my_ships') }}">My Ships</a>
                 </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="{{ url_for('astronaut_profile', user_id=session['userid']) }}">My Profile</a>
+                </li>
                 {% endif %}
             </ul>
             {% if 'loggedin' in session %}

@@ -155,7 +155,7 @@ def register_astronaut():
                 user_id = cursor.lastrowid  # Fetch the last inserted id
 
                 # Insert new astronaut into Astronaut table
-                cursor.execute('INSERT INTO Astronaut (user_id, company_id, date_of_birth, nationality, preferred_role) VALUES (%s, %s, %s, %s, %s)',
+                cursor.execute('INSERT INTO Astronaut (user_id, company_id, date_of_birth, nationality, role_id) VALUES (%s, %s, %s, %s, %s)',
                                (user_id, company_id, date_of_birth, nationality, None))
                 mysql.connection.commit()
                 message = 'Astronaut successfully registered!'
