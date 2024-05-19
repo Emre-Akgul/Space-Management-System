@@ -192,6 +192,77 @@ def create_space_mission():
 	else:
 		return redirect(url_for('login_company'))
 
+@app.route('/manage_missions', methods=['GET', 'POST'])
+def manage_missions():
+	if 'loggedin' in session:
+		cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
+		user_id = session['userid']
+
+		if request.method == 'POST':
+			company_type = request.form.get('company_type')
+			
+			if company_type == 'creator':
+				cursor.execute('SELECT * FROM space_mission WHERE creator_comp_id = %s', (user_id,))
+			elif company_type == 'manager':
+				cursor.execute('SELECT * FROM space_mission WHERE manager_comp_id = %s', (user_id,))
+			else:
+				flash('Invalid company type selected', 'danger')
+				return redirect(url_for('manage_missions'))
+
+			missions = cursor.fetchall()
+			return render_template('manage_missions.html', missions=missions, company_type=company_type)
+		
+		return render_template('manage_missions.html', missions=None)
+	else:
+		return redirect(url_for('login_company'))
+
+@app.route('/edit_mission/<int:mission_id>', methods=['GET', 'POST'])
+def edit_mission(mission_id):
+	if 'loggedin' in session:
+		cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
+		
+		# Fetch the mission details
+		cursor.execute('SELECT * FROM space_mission WHERE mission_id = %s', (mission_id,))
+		mission = cursor.fetchone()
+
+		# Fetch the company's spaceships
+		creator_comp_id = session['userid']
+		cursor.execute('''
+			SELECT s.spaceship_id, s.spaceship_name 
+			FROM Spaceship s
+			JOIN owns o ON s.spaceship_id = o.spaceship_id
+			WHERE o.company_id = %s
+		''', (creator_comp_id,))
+		spaceships = cursor.fetchall()
+
+		if request.method == 'POST':
+			mission_name = request.form.get('mission_name')
+			description = request.form.get('description')
+			status = request.form.get('status')
+			launch_date = request.form.get('launch_date')
+			destination = request.form.get('destination')
+			cost = request.form.get('cost')
+			duration = request.form.get('duration')
+			crew_size = request.form.get('crew_size')
+			required_roles = request.form.get('required_roles')
+			bid_deadline = request.form.get('bid_deadline')
+			spaceship_id = request.form.get('spaceship_id')
+
+			cursor.execute('''
+				UPDATE space_mission 
+				SET mission_name=%s, description=%s, status=%s, launch_date=%s, destination=%s, 
+					cost=%s, duration=%s, crew_size=%s, required_roles=%s, bid_deadline=%s, spaceship_id=%s 
+				WHERE mission_id=%s
+			''', (mission_name, description, status, launch_date, destination, cost, duration, crew_size, required_roles, bid_deadline, spaceship_id, mission_id))
+			mysql.connection.commit()
+
+			flash('Mission updated successfully!', 'success')
+			return redirect(url_for('manage_missions'))
+
+		return render_template('edit_mission.html', mission=mission, spaceships=spaceships)
+	else:
+		return redirect(url_for('login_company'))
+
 def get_companies_and_spaceships():
 	cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
 
