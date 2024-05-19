@@ -146,20 +146,38 @@ CREATE TABLE mission_resource (
 );
 
 CREATE TABLE Training_program (
-	program_id INT AUTO_INCREMENT PRIMARY KEY,
-	name VARCHAR(256),
-	description VARCHAR(4096),
-	required_for VARCHAR(100),
-	completion_date DATE
+    program_id INT AUTO_INCREMENT PRIMARY KEY,
+    name VARCHAR(256),
+    description VARCHAR(4096),
+    required_for INT,
+    FOREIGN KEY (required_for) REFERENCES Role(role_id)
 );
 
 CREATE TABLE astronaut_training (
-	astronaut_id INT,
-	program_id INT,
-	FOREIGN KEY (astronaut_id) REFERENCES User(user_id),
-	FOREIGN KEY (program_id) REFERENCES Training_program(program_id),
-	PRIMARY KEY (astronaut_id, program_id)
+    astronaut_id INT,
+    program_id INT,
+    completion_date DATE,
+    FOREIGN KEY (astronaut_id) REFERENCES User(user_id),
+    FOREIGN KEY (program_id) REFERENCES Training_program(program_id),
+    PRIMARY KEY (astronaut_id, program_id)
 );
+
+INSERT INTO Training_program (name, description, required_for) VALUES 
+('Commander Essential Training', 'This is the essential training program for the commander role.', (SELECT role_id FROM Role WHERE role_name = 'Commander')),
+('Commander Intermediate Training', 'This is the intermediate training program for the commander role.', (SELECT role_id FROM Role WHERE role_name = 'Commander')),
+('Commander Advanced Training', 'This is the advanced training program for the commander role.', (SELECT role_id FROM Role WHERE role_name = 'Commander')),
+('Pilot Essential Training', 'This is the essential training program for the pilot role.', (SELECT role_id FROM Role WHERE role_name = 'Pilot')),
+('Pilot Intermediate Training', 'This is the intermediate training program for the pilot role.', (SELECT role_id FROM Role WHERE role_name = 'Pilot')),
+('Pilot Advanced Training', 'This is the advanced training program for the pilot role.', (SELECT role_id FROM Role WHERE role_name = 'Pilot')),
+('Mission Specialist Essential Training', 'This is the essential training program for the mission specialist role.', (SELECT role_id FROM Role WHERE role_name = 'Mission Specialist')),
+('Mission Specialist Intermediate Training', 'This is the intermediate training program for the mission specialist role.', (SELECT role_id FROM Role WHERE role_name = 'Mission Specialist')),
+('Mission Specialist Advanced Training', 'This is the advanced training program for the mission specialist role.', (SELECT role_id FROM Role WHERE role_name = 'Mission Specialist')),
+('Flight Engineer Essential Training', 'This is the essential training program for the flight engineer role.', (SELECT role_id FROM Role WHERE role_name = 'Flight Engineer')),
+('Flight Engineer Intermediate Training', 'This is the intermediate training program for the flight engineer role.', (SELECT role_id FROM Role WHERE role_name = 'Flight Engineer')),
+('Flight Engineer Advanced Training', 'This is the advanced training program for the flight engineer role.', (SELECT role_id FROM Role WHERE role_name = 'Flight Engineer')),
+('Medical Doctor Essential Training', 'This is the essential training program for the medical doctor role.', (SELECT role_id FROM Role WHERE role_name = 'Medical Doctor')),
+('Medical Doctor Intermediate Training', 'This is the intermediate training program for the medical doctor role.', (SELECT role_id FROM Role WHERE role_name = 'Medical Doctor')),
+('Medical Doctor Advanced Training', 'This is the advanced training program for the medical doctor role.', (SELECT role_id FROM Role WHERE role_name = 'Medical Doctor'));
 
 CREATE TABLE Health_record (
 	record_id INT AUTO_INCREMENT PRIMARY KEY,

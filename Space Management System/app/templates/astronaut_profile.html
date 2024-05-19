@@ -5,6 +5,12 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{{ astronaut.name }}'s Profile</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+    <style>
+        table, th, td {
+            border: 1px solid black;
+        }
+    </style>
+
 </head>
 <body>
     <h1>{{ astronaut.name }}'s Profile</h1>
@@ -130,6 +136,34 @@
             {% endfor %}
         </tbody>
     </table>
+
+    {% if is_own_profile %}
+    <h2>Available Training Programs</h2>
+    <table>
+        <thead>
+            <tr>
+                <th>Program Name</th>
+                <th>Description</th>
+                <th>Required For</th>
+                <th>Action</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for program in available_training_programs %}
+            <tr>
+                <td>{{ program.name }}</td>
+                <td>{{ program.description }}</td>
+                <td>{{ program.required_for }}</td>
+                <td>
+                    <form action="{{ url_for('apply_training', user_id=astronaut.user_id, program_id=program.program_id) }}" method="post">
+                        <button type="submit" class="btn btn-primary">Apply</button>
+                    </form>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% endif %}
 
     <a href="{{ url_for('all_astronauts') }}">Back to All Astronauts</a>
 </body>

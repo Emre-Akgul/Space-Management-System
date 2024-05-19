@@ -3,6 +3,8 @@ import re
 import os
 from flask import Flask, render_template, request, redirect, url_for, session, flash
 from flask_mysqldb import MySQL
+from flask_login import LoginManager, login_user, current_user, login_required, logout_user, UserMixin
+
 import MySQLdb.cursors
 import bcrypt
 from datetime import datetime
@@ -548,17 +550,50 @@ def astronaut_profile(user_id):
 
     # Fetch training records
     cursor.execute('''
-        SELECT Training_program.name, Training_program.description, Training_program.required_for, 
-               Training_program.completion_date
+        SELECT Training_program.program_id, Training_program.name, Training_program.description, Role.role_name AS required_for, 
+               astronaut_training.completion_date
         FROM astronaut_training
         JOIN Training_program ON astronaut_training.program_id = Training_program.program_id
+        JOIN Role ON Training_program.required_for = Role.role_id
         WHERE astronaut_training.astronaut_id = %s
     ''', (user_id,))
     training_records = cursor.fetchall()
 
+    # Fetch available training programs
+    cursor.execute('''
+        SELECT Training_program.program_id, Training_program.name, Training_program.description, Role.role_name AS required_for
+        FROM Training_program
+        JOIN Role ON Training_program.required_for = Role.role_id
+        WHERE Training_program.program_id NOT IN (
+            SELECT program_id FROM astronaut_training WHERE astronaut_id = %s
+        )
+    ''', (user_id,))
+    available_training_programs = cursor.fetchall()
+
+    is_own_profile = (session.get('userid') == user_id)
+
     return render_template('astronaut_profile.html', astronaut=astronaut, 
                            past_missions=past_missions, upcoming_missions=upcoming_missions,
-                           health_records=health_records, training_records=training_records)
+                           health_records=health_records, training_records=training_records,
+                           available_training_programs=available_training_programs,
+                           is_own_profile=True)
+
+@app.route('/apply_training/<int:user_id>/<int:program_id>', methods=['POST'])
+def apply_training(user_id, program_id):
+    if 'userid' in session and session['userid'] == user_id:
+        cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
+        cursor.execute('''
+            INSERT INTO astronaut_training (astronaut_id, program_id, completion_date)
+            VALUES (%s, %s, NULL)
+        ''', (user_id, program_id))
+        mysql.connection.commit()
+
+        flash('Training program application submitted successfully', 'success')
+    else:
+        flash('You are not authorized to perform this action', 'danger')
+
+    return redirect(url_for('astronaut_profile', user_id=user_id))
+
 
 
 if __name__ == "__main__":
