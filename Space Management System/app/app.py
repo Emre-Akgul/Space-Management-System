@@ -46,7 +46,7 @@ def login_company():
         user = cursor.fetchone()
         if user and password == user['password']:
             session['loggedin'] = True
-            session['user_id'] = user['user_id'] 
+            session['userid'] = user['user_id'] 
             session['username'] = user['name']
             return redirect(url_for('main_page'))
         else:
