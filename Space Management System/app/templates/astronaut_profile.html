@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ astronaut.name }}'s Profile</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+    <style>
+        table, th, td {
+            border: 1px solid black;
+        }
+    </style>
+</head>
+<body>
+    <h1>{{ astronaut.name }}'s Profile</h1>
+    <div class="profile">
+        <p><strong>Username:</strong> {{ astronaut.username }}</p>
+        <p><strong>Email:</strong> {{ astronaut.email }}</p>
+        <p><strong>Date of Birth:</strong> {{ astronaut.date_of_birth }}</p>
+        <p><strong>Nationality:</strong> {{ astronaut.nationality }}</p>
+        <p><strong>Experience Level:</strong> {{ astronaut.experience_level }}</p>
+        <p><strong>Role:</strong> {{ astronaut.preferred_role }}</p>
+        {% if is_own_profile %}
+            <form action="{{ url_for('change_role', user_id=astronaut.user_id) }}" method="post">
+                <label for="role_id">Change Preferred Role:</label>
+                <select id="role_id" name="role_id" required>
+                    {% for role in roles %}
+                        <option value="{{ role.role_id }}" {% if role.role_id == astronaut.role_id %}selected{% endif %}>
+                            {{ role.role_name }}
+                        </option>
+                    {% endfor %}
+                </select>
+                <button type="submit">Update Role</button>
+            </form>
+        {% endif %}
+
+        {% if astronaut.address %}
+            <h2>Company Information</h2>
+            <p><strong>Address:</strong> {{ astronaut.address }}</p>
+            <p><strong>Industry Sector:</strong> {{ astronaut.industry_sector }}</p>
+            <p><strong>Website:</strong> <a href="{{ astronaut.website }}">{{ astronaut.website }}</a></p>
+        {% endif %}
+    </div>
+
+    <h2>Past Missions</h2>
+    <table>
+        <thead>
+            <tr>
+                <th>Mission Name</th>
+                <th>Description</th>
+                <th>Status</th>
+                <th>Launch Date</th>
+                <th>Destination</th>
+                <th>Cost</th>
+                <th>Duration</th>
+                <th>Crew Size</th>
+                <th>Required Roles</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for mission in past_missions %}
+            <tr>
+                <td>{{ mission.mission_name }}</td>
+                <td>{{ mission.description }}</td>
+                <td>{{ mission.status }}</td>
+                <td>{{ mission.launch_date }}</td>
+                <td>{{ mission.destination }}</td>
+                <td>{{ mission.cost }}</td>
+                <td>{{ mission.duration }}</td>
+                <td>{{ mission.crew_size }}</td>
+                <td>{{ mission.required_roles }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <h2>Upcoming Missions</h2>
+    <table>
+        <thead>
+            <tr>
+                <th>Mission Name</th>
+                <th>Description</th>
+                <th>Status</th>
+                <th>Launch Date</th>
+                <th>Destination</th>
+                <th>Cost</th>
+                <th>Duration</th>
+                <th>Crew Size</th>
+                <th>Required Roles</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for mission in upcoming_missions %}
+            <tr>
+                <td>{{ mission.mission_name }}</td>
+                <td>{{ mission.description }}</td>
+                <td>{{ mission.status }}</td>
+                <td>{{ mission.launch_date }}</td>
+                <td>{{ mission.destination }}</td>
+                <td>{{ mission.cost }}</td>
+                <td>{{ mission.duration }}</td>
+                <td>{{ mission.crew_size }}</td>
+                <td>{{ mission.required_roles }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <h2>Health Records</h2>
+    <table>
+        <thead>
+            <tr>
+                <th>Checkup Date</th>
+                <th>Health Status</th>
+                <th>Fitness Level</th>
+                <th>Expected Ready Time</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for record in health_records %}
+            <tr>
+                <td>{{ record.checkup_date }}</td>
+                <td>{{ record.health_status }}</td>
+                <td>{{ record.fitness_level }}</td>
+                <td>{{ record.expected_ready_time }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <h2>Training Records</h2>
+    <table>
+        <thead>
+            <tr>
+                <th>Program Name</th>
+                <th>Description</th>
+                <th>Required For</th>
+                <th>Completion Date</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for program in training_records %}
+            <tr>
+                <td>{{ program.name }}</td>
+                <td>{{ program.description }}</td>
+                <td>{{ program.required_for }}</td>
+                <td>{{ program.completion_date }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    {% if is_own_profile %}
+    <h2>Available Training Programs</h2>
+    <table>
+        <thead>
+            <tr>
+                <th>Program Name</th>
+                <th>Description</th>
+                <th>Required For</th>
+                <th>Action</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for program in available_training_programs %}
+            <tr>
+                <td>{{ program.name }}</td>
+                <td>{{ program.description }}</td>
+                <td>{{ program.required_for }}</td>
+                <td>
+                    <form action="{{ url_for('apply_training', user_id=astronaut.user_id, program_id=program.program_id) }}" method="post">
+                        <button type="submit" class="btn btn-primary">Apply</button>
+                    </form>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <a href="{{ url_for('add_health_record', user_id=astronaut.user_id) }}">Add Health Record</a>
+    {% endif %}
+
+    <a href="{{ url_for('all_astronauts') }}">Back to All Astronauts</a>
+</body>
+</html>

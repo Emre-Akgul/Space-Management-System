@@ -1,0 +1,41 @@
+{% extends "layout.html" %}
+
+{% block content %}
+<div class="container mt-5">
+    <h2>Managed Missions</h2>
+    {% if missions %}
+        {% for mission in missions %}
+        <div class="card mb-3">
+            <div class="card-header">
+                Mission Name: {{ mission.mission_name }} (Status: {{ mission.status }})
+            </div>
+            <div class="card-body">
+                <ul class="list-group list-group-flush">
+                    <li class="list-group-item"><strong>Mission ID:</strong> {{ mission.mission_id }}</li>
+                    <li class="list-group-item"><strong>Creator Company:</strong> {{ mission.creator_company_name }}</li>
+                    <li class="list-group-item"><strong>Allocated Spaceship ID:</strong> {{ mission.spaceship_id or 'None' }}</li>
+                    <li class="list-group-item"><strong>Allocated Spaceship Name:</strong> {{ mission.allocated_spaceship_name or 'None' }}</li>
+                </ul>
+                <form method="post" action="{{ url_for('allocate_spaceship', mission_id=mission.mission_id) }}">
+                    <div class="form-group mt-3">
+                        <label for="spaceship">Allocate Spaceship:</label>
+                        <select class="form-control" id="spaceship" name="spaceship_id">
+                            {% for company_id, company_spaceships in spaceships.items() %}
+                                {% for spaceship in company_spaceships %}
+                                    <option value="{{ spaceship.spaceship_id }}">{{ spaceship.spaceship_name }} ({{ spaceship.type }} - {{ spaceship.status }})</option>
+                                {% endfor %}
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <button type="submit" class="btn btn-primary">Allocate</button>
+                </form>
+            </div>
+        </div>
+        {% endfor %}
+    {% else %}
+        <div class="alert alert-info" role="alert">
+            No managed missions available at the moment.
+        </div>
+    {% endif %}
+</div>
+{% endblock %}

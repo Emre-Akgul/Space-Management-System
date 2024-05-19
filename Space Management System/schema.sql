@@ -103,16 +103,30 @@ CREATE TABLE Company (
 	FOREIGN KEY (user_id) REFERENCES User(user_id)
 );
 
-CREATE TABLE Astronaut (
-	user_id INT PRIMARY KEY,
-	company_id INT,
-	date_of_birth DATE,
-	nationality VARCHAR(40) NOT NULL,
-	experience_level VARCHAR(40),
-	preferred_role VARCHAR(40),
-	FOREIGN KEY (user_id) REFERENCES User(user_id),
-	FOREIGN KEY (company_id) REFERENCES Company(user_id)
+CREATE TABLE Role (
+    role_id INT AUTO_INCREMENT PRIMARY KEY,
+    role_name VARCHAR(50) NOT NULL
 );
+
+CREATE TABLE Astronaut (
+    user_id INT PRIMARY KEY,
+    company_id INT,
+    date_of_birth DATE,
+    nationality VARCHAR(40) NOT NULL,
+    experience_level VARCHAR(40),
+    role_id INT,
+    FOREIGN KEY (user_id) REFERENCES User(user_id),
+    FOREIGN KEY (company_id) REFERENCES Company(user_id),
+    FOREIGN KEY (role_id) REFERENCES Role(role_id)
+);
+
+INSERT INTO Role (role_name) VALUES
+('Not Assigned'),
+('Commander'),
+('Pilot'),
+('Mission Specialist'),
+('Flight Engineer'),
+('Medical Doctor');
 
 CREATE TABLE participates (
 	astronaut_id INT,
@@ -132,30 +146,49 @@ CREATE TABLE mission_resource (
 );
 
 CREATE TABLE Training_program (
-	program_id INT AUTO_INCREMENT PRIMARY KEY,
-	name VARCHAR(256),
-	description VARCHAR(4096),
-	required_for VARCHAR(100),
-	completion_date DATE
+    program_id INT AUTO_INCREMENT PRIMARY KEY,
+    name VARCHAR(256),
+    description VARCHAR(4096),
+    required_for INT,
+    FOREIGN KEY (required_for) REFERENCES Role(role_id)
 );
 
 CREATE TABLE astronaut_training (
-	astronaut_id INT,
-	program_id INT,
-	FOREIGN KEY (astronaut_id) REFERENCES User(user_id),
-	FOREIGN KEY (program_id) REFERENCES Training_program(program_id),
-	PRIMARY KEY (astronaut_id, program_id)
+    astronaut_id INT,
+    program_id INT,
+    completion_date DATE,
+    FOREIGN KEY (astronaut_id) REFERENCES User(user_id),
+    FOREIGN KEY (program_id) REFERENCES Training_program(program_id),
+    PRIMARY KEY (astronaut_id, program_id)
 );
 
+INSERT INTO Training_program (name, description, required_for) VALUES 
+('Commander Essential Training', 'This is the essential training program for the commander role.', (SELECT role_id FROM Role WHERE role_name = 'Commander')),
+('Commander Intermediate Training', 'This is the intermediate training program for the commander role.', (SELECT role_id FROM Role WHERE role_name = 'Commander')),
+('Commander Advanced Training', 'This is the advanced training program for the commander role.', (SELECT role_id FROM Role WHERE role_name = 'Commander')),
+('Pilot Essential Training', 'This is the essential training program for the pilot role.', (SELECT role_id FROM Role WHERE role_name = 'Pilot')),
+('Pilot Intermediate Training', 'This is the intermediate training program for the pilot role.', (SELECT role_id FROM Role WHERE role_name = 'Pilot')),
+('Pilot Advanced Training', 'This is the advanced training program for the pilot role.', (SELECT role_id FROM Role WHERE role_name = 'Pilot')),
+('Mission Specialist Essential Training', 'This is the essential training program for the mission specialist role.', (SELECT role_id FROM Role WHERE role_name = 'Mission Specialist')),
+('Mission Specialist Intermediate Training', 'This is the intermediate training program for the mission specialist role.', (SELECT role_id FROM Role WHERE role_name = 'Mission Specialist')),
+('Mission Specialist Advanced Training', 'This is the advanced training program for the mission specialist role.', (SELECT role_id FROM Role WHERE role_name = 'Mission Specialist')),
+('Flight Engineer Essential Training', 'This is the essential training program for the flight engineer role.', (SELECT role_id FROM Role WHERE role_name = 'Flight Engineer')),
+('Flight Engineer Intermediate Training', 'This is the intermediate training program for the flight engineer role.', (SELECT role_id FROM Role WHERE role_name = 'Flight Engineer')),
+('Flight Engineer Advanced Training', 'This is the advanced training program for the flight engineer role.', (SELECT role_id FROM Role WHERE role_name = 'Flight Engineer')),
+('Medical Doctor Essential Training', 'This is the essential training program for the medical doctor role.', (SELECT role_id FROM Role WHERE role_name = 'Medical Doctor')),
+('Medical Doctor Intermediate Training', 'This is the intermediate training program for the medical doctor role.', (SELECT role_id FROM Role WHERE role_name = 'Medical Doctor')),
+('Medical Doctor Advanced Training', 'This is the advanced training program for the medical doctor role.', (SELECT role_id FROM Role WHERE role_name = 'Medical Doctor'));
+
 CREATE TABLE Health_record (
-	record_id INT AUTO_INCREMENT PRIMARY KEY,
-	checkup_date DATE NOT NULL,
-	health_status VARCHAR(256),
-	fitness_level VARCHAR(50),
-	expected_ready_time DATETIME,
-	astronaut_id INT,
-	FOREIGN KEY (astronaut_id) REFERENCES User(user_id)
+    record_id INT AUTO_INCREMENT PRIMARY KEY,
+    checkup_date DATE NOT NULL,
+    health_status VARCHAR(256),
+    fitness_level ENUM('Optimal', 'Above Average', 'Average', 'Below Average', 'Injured') NOT NULL,
+    expected_ready_time DATETIME,
+    astronaut_id INT,
+    FOREIGN KEY (astronaut_id) REFERENCES User(user_id)
 );
+
 
 CREATE TABLE mission_feedback (
 	feedback_id INT AUTO_INCREMENT PRIMARY KEY,
@@ -166,6 +199,7 @@ CREATE TABLE mission_feedback (
 	FOREIGN KEY (mission_id) REFERENCES space_mission(mission_id),
 	FOREIGN KEY (feedback_giver) REFERENCES User(user_id)
 );
+ALTER TABLE Spaceship CONVERT TO CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
 CREATE TABLE owns (
     company_id INT,

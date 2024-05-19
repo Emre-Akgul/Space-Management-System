@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Akgul Bank</title>
+    <title>Space Management System</title>
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
 </head>
 <body>
@@ -24,18 +24,44 @@
                 <li class="nav-item">
                     <a class="nav-link" href="{{ url_for('register_company') }}">Register Company</a>
                 </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="{{ url_for('login_astronaut') }}">Login Astronaut</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="{{ url_for('register_astronaut') }}">Register Astronaut</a>
+                </li>
                 {% else %}
                 <li class="nav-item">
                     <a class="nav-link" href="{{ url_for('create_space_mission') }}">Create Space Mission</a>
                 </li>
                 <li class="nav-item">
                     <a class="nav-link" href="{{ url_for('manage_missions') }}">Manage Missions</a>
+                <li class="nav-item">
+                    <a class="nav-link" href="{{ url_for('missions') }}">Missions</a>
                 </li>
                 <li class="nav-item">
                     <a class="nav-link" href="{{ url_for('logout') }}">Logout</a>
                 </li>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="{{ url_for('biddings') }}">Biddings</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="{{ url_for('managed_missions') }}">Managed Missions</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="{{ url_for('my_ships') }}">My Ships</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="{{ url_for('astronaut_profile', user_id=session['userid']) }}">My Profile</a>
+                </li>
                 {% endif %}
             </ul>
+            {% if 'loggedin' in session %}
+            <div class="ml-auto">
+                <a class="nav-link" href="{{ url_for('logout') }}">Logout</a>
+            </div>
+            {% endif %}
         </div>
     </nav>
 
