@@ -22,24 +22,10 @@
 			text-align: center;
 			color: #333;
 		}
-		.form-group {
-			margin-bottom: 15px;
-		}
-		label {
-			display: block;
-			margin-bottom: 5px;
-			font-weight: bold;
-		}
-		input, textarea, select {
-			width: 100%;
-			padding: 10px;
-			margin-bottom: 10px;
-			border: 1px solid #ccc;
-			border-radius: 5px;
-		}
 		.btn {
 			display: inline-block;
 			padding: 10px 20px;
+			margin: 5px 0;
 			background-color: #007bff;
 			color: white;
 			text-align: center;
@@ -49,6 +35,21 @@
 		}
 		.btn:hover {
 			background-color: #0056b3;
+		}
+		form label {
+			display: block;
+			margin-top: 10px;
+		}
+		form input, form select, form textarea {
+			width: 100%;
+			padding: 10px;
+			margin-top: 5px;
+			border: 1px solid #ccc;
+			border-radius: 5px;
+		}
+		textarea {
+			height: 100px;
+			resize: none;
 		}
 		.back-btn {
 			display: block;
@@ -68,57 +69,48 @@
 <body>
 	<div class="container">
 		<h1>Edit Mission</h1>
-		<form method="POST" action="{{ url_for('edit_mission', mission_id=mission.mission_id) }}">
-			<div class="form-group">
-				<label for="mission_name">Mission Name</label>
-				<input type="text" name="mission_name" id="mission_name" value="{{ mission.mission_name }}" required>
-			</div>
-			<div class="form-group">
-				<label for="description">Description</label>
-				<textarea name="description" id="description" required>{{ mission.description }}</textarea>
-			</div>
-			<div class="form-group">
-				<label for="status">Status</label>
-				<input type="text" name="status" id="status" value="{{ mission.status }}" required>
-			</div>
-			<div class="form-group">
-				<label for="launch_date">Launch Date</label>
-				<input type="date" name="launch_date" id="launch_date" value="{{ mission.launch_date }}" required>
-			</div>
-			<div class="form-group">
-				<label for="destination">Destination</label>
-				<input type="text" name="destination" id="destination" value="{{ mission.destination }}" required>
-			</div>
-			<div class="form-group">
-				<label for="cost">Cost</label>
-				<input type="number" name="cost" id="cost" value="{{ mission.cost }}" required>
-			</div>
-			<div class="form-group">
-				<label for="duration">Duration (days)</label>
-				<input type="number" name="duration" id="duration" value="{{ mission.duration }}" required>
-			</div>
-			<div class="form-group">
-				<label for="crew_size">Crew Size</label>
-				<input type="number" name="crew_size" id="crew_size" value="{{ mission.crew_size }}" required>
-			</div>
-			<div class="form-group">
-				<label for="required_roles">Required Roles</label>
-				<input type="text" name="required_roles" id="required_roles" value="{{ mission.required_roles }}" required>
-			</div>
-			<div class="form-group">
-				<label for="bid_deadline">Bid Deadline</label>
-				<input type="date" name="bid_deadline" id="bid_deadline" value="{{ mission.bid_deadline }}" required>
-			</div>
-			<div class="form-group">
-				<label for="spaceship_id">Spaceship</label>
-				<select name="spaceship_id" id="spaceship_id" required>
-					{% for spaceship in spaceships %}
-						<option value="{{ spaceship.spaceship_id }}" {% if spaceship.spaceship_id == mission.spaceship_id %}selected{% endif %}>{{ spaceship.spaceship_name }}</option>
-					{% endfor %}
-				</select>
-			</div>
+		<form method="POST">
+			<label for="mission_name">Mission Name:</label>
+			<input type="text" name="mission_name" id="mission_name" value="{{ mission.mission_name }}" required>
+
+			<label for="description">Description:</label>
+			<textarea name="description" id="description" required>{{ mission.description }}</textarea>
+
+			<label for="status">Status:</label>
+			<input type="text" name="status" id="status" value="{{ mission.status }}" required>
+
+			<label for="launch_date">Launch Date:</label>
+			<input type="date" name="launch_date" id="launch_date" value="{{ mission.launch_date }}" required>
+
+			<label for="destination">Destination:</label>
+			<input type="text" name="destination" id="destination" value="{{ mission.destination }}" required>
+
+			<label for="cost">Cost:</label>
+			<input type="number" step="0.01" name="cost" id="cost" value="{{ mission.cost }}" required>
+
+			<label for="duration">Duration (days):</label>
+			<input type="number" name="duration" id="duration" value="{{ mission.duration }}" required>
+
+			<label for="crew_size">Crew Size:</label>
+			<input type="number" name="crew_size" id="crew_size" value="{{ mission.crew_size }}" required>
+
+			<label for="required_roles">Required Roles:</label>
+			<input type="text" name="required_roles" id="required_roles" value="{{ mission.required_roles }}" required>
+
+			<label for="bid_deadline">Bid Deadline:</label>
+			<input type="date" name="bid_deadline" id="bid_deadline" value="{{ mission.bid_deadline }}" required>
+
+			<label for="spaceship_id">Spaceship:</label>
+			<select name="spaceship_id" id="spaceship_id">
+				<option value="">Select a spaceship</option>
+				{% for spaceship in spaceships %}
+				<option value="{{ spaceship.spaceship_id }}" {% if spaceship.spaceship_id == mission.spaceship_id %}selected{% endif %}>{{ spaceship.spaceship_name }}</option>
+				{% endfor %}
+			</select>
+
 			<button type="submit" class="btn">Update Mission</button>
 		</form>
+		
 		<a href="{{ url_for('manage_missions') }}" class="back-btn">Go Back</a>
 	</div>
 </body>

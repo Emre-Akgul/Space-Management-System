@@ -572,11 +572,9 @@ def edit_mission(mission_id):
 	if 'loggedin' in session:
 		cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
 		
-		# Fetch the mission details
 		cursor.execute('SELECT * FROM space_mission WHERE mission_id = %s', (mission_id,))
 		mission = cursor.fetchone()
 
-		# Fetch the company's spaceships
 		creator_comp_id = session['userid']
 		cursor.execute('''
 			SELECT s.spaceship_id, s.spaceship_name 
@@ -599,16 +597,25 @@ def edit_mission(mission_id):
 			bid_deadline = request.form.get('bid_deadline')
 			spaceship_id = request.form.get('spaceship_id')
 
-			cursor.execute('''
-				UPDATE space_mission 
-				SET mission_name=%s, description=%s, status=%s, launch_date=%s, destination=%s, 
-					cost=%s, duration=%s, crew_size=%s, required_roles=%s, bid_deadline=%s, spaceship_id=%s 
-				WHERE mission_id=%s
-			''', (mission_name, description, status, launch_date, destination, cost, duration, crew_size, required_roles, bid_deadline, spaceship_id, mission_id))
+			if spaceship_id:
+				cursor.execute('''
+					UPDATE space_mission 
+					SET mission_name=%s, description=%s, status=%s, launch_date=%s, destination=%s, 
+						cost=%s, duration=%s, crew_size=%s, required_roles=%s, bid_deadline=%s, spaceship_id=%s 
+					WHERE mission_id=%s
+				''', (mission_name, description, status, launch_date, destination, cost, duration, crew_size, required_roles, bid_deadline, spaceship_id, mission_id))
+			else:
+				cursor.execute('''
+					UPDATE space_mission 
+					SET mission_name=%s, description=%s, status=%s, launch_date=%s, destination=%s, 
+						cost=%s, duration=%s, crew_size=%s, required_roles=%s, bid_deadline=%s 
+					WHERE mission_id=%s
+				''', (mission_name, description, status, launch_date, destination, cost, duration, crew_size, required_roles, bid_deadline, mission_id))
+
 			mysql.connection.commit()
 
 			flash('Mission updated successfully!', 'success')
-			return redirect(url_for('manage_missions'))
+			return redirect(url_for('main_page'))
 
 		return render_template('edit_mission.html', mission=mission, spaceships=spaceships)
 	else:
@@ -796,6 +803,41 @@ def change_role(user_id):
 
     return redirect(url_for('astronaut_profile', user_id=user_id))
 
+@app.route('/edit_astronauts/<int:mission_id>', methods=['GET', 'POST'])
+def edit_astronauts(mission_id):
+	if 'loggedin' in session:
+		cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
+		
+		# Fetch the mission details
+		cursor.execute('SELECT * FROM space_mission WHERE mission_id = %s', (mission_id,))
+		mission = cursor.fetchone()
+
+		# Fetch the astronauts of the company
+		manager_comp_id = session['userid']
+		cursor.execute('''
+			SELECT a.user_id AS astronaut_id, u.name AS astronaut_name 
+			FROM Astronaut a
+			JOIN User u ON a.user_id = u.user_id
+			WHERE a.company_id = %s
+		''', (manager_comp_id,))
+		astronauts = cursor.fetchall()
+
+		if request.method == 'POST':
+			selected_astronauts = request.form.getlist('astronauts')
+
+			for astronaut_id in selected_astronauts:
+				cursor.execute('''
+					INSERT INTO participates (mission_id, astronaut_id) 
+					VALUES (%s, %s)
+				''', (mission_id, astronaut_id))
+			mysql.connection.commit()
+
+			flash('Astronauts updated successfully!', 'success')
+			return redirect(url_for('main_page'))
+
+		return render_template('edit_astronauts.html', mission=mission, astronauts=astronauts)
+	else:
+		return redirect(url_for('login_company'))
 
 if __name__ == "__main__":
     port = int(os.environ.get('PORT', 5000))

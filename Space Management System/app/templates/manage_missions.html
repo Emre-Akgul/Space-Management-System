@@ -93,6 +93,9 @@
 				<p><strong>Bid Deadline:</strong> {{ mission.bid_deadline }}</p>
 				<p><strong>Spaceship ID:</strong> {{ mission.spaceship_id }}</p>
 				<a href="{{ url_for('edit_mission', mission_id=mission.mission_id) }}" class="btn">Edit Mission</a>
+				{% if company_type == 'manager' %}
+				<a href="{{ url_for('edit_astronauts', mission_id=mission.mission_id) }}" class="btn">Edit Astronauts</a>
+				{% endif %}
 			</div>
 			{% endfor %}
 		</div>
