@@ -195,7 +195,7 @@ def login_admin():
     return render_template('login_admin.html')
 
 @app.route('/managed_admins', methods=['GET', 'DELETE'])
-def managed_admins(user_id):
+def managed_admins(user_id = None):
     if 'admin' not in session:
             flash('You need to login as an admin to view this page.', 'danger')
             return redirect(url_for('login_admin'))
@@ -450,6 +450,9 @@ def managed_missions():
     if 'admin' in session: # Admin can view all missions
         cursor.execute("""
             SELECT sm.mission_id, sm.mission_name, sm.status, sm.spaceship_id, sm.creator_comp_id, u.name AS creator_company_name, s.spaceship_name AS allocated_spaceship_name
+            FROM space_mission sm
+            JOIN User u ON sm.creator_comp_id = u.user_id
+            LEFT JOIN Spaceship s ON sm.spaceship_id = s.spaceship_id
         """)
 
     missions = cursor.fetchall()
