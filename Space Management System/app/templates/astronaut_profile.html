@@ -10,7 +10,6 @@
             border: 1px solid black;
         }
     </style>
-
 </head>
 <body>
     <h1>{{ astronaut.name }}'s Profile</h1>
@@ -21,6 +20,20 @@
         <p><strong>Nationality:</strong> {{ astronaut.nationality }}</p>
         <p><strong>Experience Level:</strong> {{ astronaut.experience_level }}</p>
         <p><strong>Role:</strong> {{ astronaut.preferred_role }}</p>
+        {% if is_own_profile %}
+            <form action="{{ url_for('change_role', user_id=astronaut.user_id) }}" method="post">
+                <label for="role_id">Change Preferred Role:</label>
+                <select id="role_id" name="role_id" required>
+                    {% for role in roles %}
+                        <option value="{{ role.role_id }}" {% if role.role_id == astronaut.role_id %}selected{% endif %}>
+                            {{ role.role_name }}
+                        </option>
+                    {% endfor %}
+                </select>
+                <button type="submit">Update Role</button>
+            </form>
+        {% endif %}
+
         {% if astronaut.address %}
             <h2>Company Information</h2>
             <p><strong>Address:</strong> {{ astronaut.address }}</p>
@@ -163,6 +176,8 @@
             {% endfor %}
         </tbody>
     </table>
+
+    <a href="{{ url_for('add_health_record', user_id=astronaut.user_id) }}">Add Health Record</a>
     {% endif %}
 
     <a href="{{ url_for('all_astronauts') }}">Back to All Astronauts</a>

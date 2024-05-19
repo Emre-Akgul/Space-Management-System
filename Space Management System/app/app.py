@@ -570,13 +570,17 @@ def astronaut_profile(user_id):
     ''', (user_id,))
     available_training_programs = cursor.fetchall()
 
+    # Fetch roles
+    cursor.execute('SELECT role_id, role_name FROM Role')
+    roles = cursor.fetchall()
+
     is_own_profile = (session.get('userid') == user_id)
 
-    return render_template('astronaut_profile.html', astronaut=astronaut, 
+    return render_template('astronaut_profile.html', astronaut=astronaut, roles=roles,
                            past_missions=past_missions, upcoming_missions=upcoming_missions,
                            health_records=health_records, training_records=training_records,
                            available_training_programs=available_training_programs,
-                           is_own_profile=True)
+                           is_own_profile=is_own_profile)
 
 @app.route('/apply_training/<int:user_id>/<int:program_id>', methods=['POST'])
 def apply_training(user_id, program_id):
@@ -594,6 +598,54 @@ def apply_training(user_id, program_id):
 
     return redirect(url_for('astronaut_profile', user_id=user_id))
 
+@app.route('/add_health_record/<int:user_id>', methods=['GET', 'POST'])
+def add_health_record(user_id):
+    if session.get('userid') != user_id:
+        flash('You are not authorized to add health records for this astronaut', 'danger')
+        return redirect(url_for('astronaut_profile', user_id=user_id))
+    
+    if request.method == 'POST':
+        checkup_date = request.form['checkup_date']
+        health_status = request.form['health_status']
+        fitness_level = request.form['fitness_level']
+        expected_ready_time = request.form['expected_ready_time']
+        
+        if not (checkup_date and health_status and fitness_level):
+            flash('Please fill out all required fields', 'danger')
+        else:
+            cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
+            if not expected_ready_time:
+                expected_ready_time = None
+            cursor.execute('''
+                INSERT INTO Health_record (checkup_date, health_status, fitness_level, expected_ready_time, astronaut_id)
+                VALUES (%s, %s, %s, %s, %s)
+            ''', (checkup_date, health_status, fitness_level, expected_ready_time, user_id))
+            mysql.connection.commit()
+            flash('Health record added successfully', 'success')
+            return redirect(url_for('astronaut_profile', user_id=user_id))
+
+    return render_template('add_health_record.html', user_id=user_id)
+
+@app.route('/change_role/<int:user_id>', methods=['POST'])
+def change_role(user_id):
+    if session.get('userid') != user_id:
+        flash('You are not authorized to change the role for this astronaut', 'danger')
+        return redirect(url_for('astronaut_profile', user_id=user_id))
+
+    new_role_id = request.form.get('role_id')
+    if new_role_id:
+        cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
+        cursor.execute('''
+            UPDATE Astronaut
+            SET role_id = %s
+            WHERE user_id = %s
+        ''', (new_role_id, user_id))
+        mysql.connection.commit()
+        flash('Preferred role updated successfully', 'success')
+    else:
+        flash('Please select a valid role', 'danger')
+
+    return redirect(url_for('astronaut_profile', user_id=user_id))
 
 
 if __name__ == "__main__":

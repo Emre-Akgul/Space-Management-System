@@ -180,14 +180,15 @@ INSERT INTO Training_program (name, description, required_for) VALUES
 ('Medical Doctor Advanced Training', 'This is the advanced training program for the medical doctor role.', (SELECT role_id FROM Role WHERE role_name = 'Medical Doctor'));
 
 CREATE TABLE Health_record (
-	record_id INT AUTO_INCREMENT PRIMARY KEY,
-	checkup_date DATE NOT NULL,
-	health_status VARCHAR(256),
-	fitness_level VARCHAR(50),
-	expected_ready_time DATETIME,
-	astronaut_id INT,
-	FOREIGN KEY (astronaut_id) REFERENCES User(user_id)
+    record_id INT AUTO_INCREMENT PRIMARY KEY,
+    checkup_date DATE NOT NULL,
+    health_status VARCHAR(256),
+    fitness_level ENUM('Optimal', 'Above Average', 'Average', 'Below Average', 'Injured') NOT NULL,
+    expected_ready_time DATETIME,
+    astronaut_id INT,
+    FOREIGN KEY (astronaut_id) REFERENCES User(user_id)
 );
+
 
 CREATE TABLE mission_feedback (
 	feedback_id INT AUTO_INCREMENT PRIMARY KEY,
