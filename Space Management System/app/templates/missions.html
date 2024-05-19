@@ -3,29 +3,75 @@
 {% block content %}
 <div class="container mt-5">
     <h2>Available Missions</h2>
-    {% if missions %}
-        {% for mission in missions %}
-        <div class="card mb-4">
-            <div class="card-body">
-                <h5 class="card-title">{{ mission.mission_name }}</h5>
-                <p class="card-text">{{ mission.description[:100] }}...</p>
-                <ul class="list-group list-group-flush">
-                    <li class="list-group-item"><strong>Mission ID:</strong> {{ mission.mission_id }}</li>
-                    <li class="list-group-item"><strong>Status:</strong> {{ mission.status }}</li>
-                    <li class="list-group-item"><strong>Launch Date:</strong> {{ mission.launch_date }}</li>
-                    <li class="list-group-item"><strong>Destination:</strong> {{ mission.destination }}</li>
-                    <li class="list-group-item"><strong>Cost:</strong> ${{ mission.cost }}</li>
-                    <li class="list-group-item"><strong>Duration:</strong> {{ mission.duration }} days</li>
-                    <li class="list-group-item"><strong>Crew Size:</strong> {{ mission.crew_size }}</li>
-                </ul>
+    <form method="GET" action="{{ url_for('missions') }}">
+        <div class="form-group">
+            <label for="status">Status:</label>
+            <select class="form-control" id="status" name="status">
+                <option value="">Any</option>
+                <option value="Planning" {{ 'selected' if status == 'Planning' else '' }}>Planning</option>
+                <option value="Bidding" {{ 'selected' if status == 'Bidding' else '' }}>Bidding</option>
+                <option value="In Progress" {{ 'selected' if status == 'In Progress' else '' }}>In Progress</option>
+                <option value="Completed" {{ 'selected' if status == 'Completed' else '' }}>Completed</option>
+            </select>
+        </div>
+        <div class="form-row">
+            <div class="col">
+                <label for="cost_min">Minimum Cost:</label>
+                <input type="number" class="form-control" id="cost_min" name="cost_min" value="{{ cost_min }}">
             </div>
-            <div class="card-footer text-right">
-                <a href="{{ url_for('mission_details', mission_id=mission.mission_id) }}" class="btn btn-primary">Details</a>
+            <div class="col">
+                <label for="cost_max">Maximum Cost:</label>
+                <input type="number" class="form-control" id="cost_max" name="cost_max" value="{{ cost_max }}">
             </div>
         </div>
-        {% endfor %}
+        <div class="form-row">
+            <div class="col">
+                <label for="launch_after">Launch After (YYYY-MM-DD):</label>
+                <input type="date" class="form-control" id="launch_after" name="launch_after" value="{{ launch_after }}">
+            </div>
+            <div class="col">
+                <label for="launch_before">Launch Before (YYYY-MM-DD):</label>
+                <input type="date" class="form-control" id="launch_before" name="launch_before" value="{{ launch_before }}">
+            </div>
+        </div>
+        <div class="form-row">
+            <div class="col">
+                <label for="crew_min">Minimum Crew Size:</label>
+                <input type="number" class="form-control" id="crew_min" name="crew_min" value="{{ crew_min }}">
+            </div>
+            <div class="col">
+                <label for="crew_max">Maximum Crew Size:</label>
+                <input type="number" class="form-control" id="crew_max" name="crew_max" value="{{ crew_max }}">
+            </div>
+        </div>
+        <button type="submit" class="btn btn-primary">Search</button>
+    </form>
+
+    {% if missions %}
+        <div class="mt-4">
+            {% for mission in missions %}
+            <div class="card mb-4">
+                <div class="card-body">
+                    <h5 class="card-title">{{ mission.mission_name }}</h5>
+                    <p class="card-text">{{ mission.description[:100] }}...</p>
+                    <ul class="list-group list-group-flush">
+                        <li class="list-group-item"><strong>Mission ID:</strong> {{ mission.mission_id }}</li>
+                        <li class="list-group-item"><strong>Status:</strong> {{ mission.status }}</li>
+                        <li class="list-group-item"><strong>Launch Date:</strong> {{ mission.launch_date }}</li>
+                        <li class="list-group-item"><strong>Destination:</strong> {{ mission.destination }}</li>
+                        <li class="list-group-item"><strong>Cost:</strong> ${{ mission.cost }}</li>
+                        <li class="list-group-item"><strong>Duration:</strong> {{ mission.duration }} days</li>
+                        <li class="list-group-item"><strong>Crew Size:</strong> {{ mission.crew_size }}</li>
+                    </ul>
+                    <div class="card-footer text-right">
+                        <a href="{{ url_for('mission_details', mission_id=mission.mission_id) }}" class="btn btn-primary">Details</a>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
     {% else %}
-    <p>No missions available at the moment.</p>
+        <p>No missions available at the moment.</p>
     {% endif %}
 </div>
 {% endblock %}

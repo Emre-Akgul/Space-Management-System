@@ -26,13 +26,24 @@
                 </li>
                 {% else %}
                 <li class="nav-item">
-                    <a class="nav-link" href="{{ url_for('logout') }}">Logout</a>
+                    <a class="nav-link" href="{{ url_for('missions') }}">Missions</a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link" href="{{ url_for('missions') }}">Missions</a>
+                    <a class="nav-link" href="{{ url_for('biddings') }}">Biddings</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="{{ url_for('managed_missions') }}">Managed Missions</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="{{ url_for('my_ships') }}">My Ships</a>
                 </li>
                 {% endif %}
             </ul>
+            {% if 'loggedin' in session %}
+            <div class="ml-auto">
+                <a class="nav-link" href="{{ url_for('logout') }}">Logout</a>
+            </div>
+            {% endif %}
         </div>
     </nav>
 
