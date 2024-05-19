@@ -921,13 +921,16 @@ def edit_astronauts(mission_id):
 		''', (manager_comp_id,))
 		astronauts = cursor.fetchall()
 
+		cursor.execute('''
+			SELECT astronaut_id 
+			FROM participates 
+			WHERE mission_id = %s
+		''', (mission_id,))
+		current_participants = cursor.fetchall()
+		current_participants_ids = {participant['astronaut_id'] for participant in current_participants}
+
 		if request.method == 'POST':
 			selected_astronauts = request.form.getlist('astronauts')
-
-			cursor.execute('SELECT astronaut_id FROM participates WHERE mission_id = %s', (mission_id,))
-			current_participants = cursor.fetchall()
-			current_participants_ids = {participant['astronaut_id'] for participant in current_participants}
-
 			selected_astronaut_ids = set(map(int, selected_astronauts))
 
 			astronauts_to_add = selected_astronaut_ids - current_participants_ids
@@ -950,7 +953,7 @@ def edit_astronauts(mission_id):
 			flash('Astronauts updated successfully!', 'success')
 			return redirect(url_for('main_page'))
 
-		return render_template('edit_astronauts.html', mission=mission, astronauts=astronauts)
+		return render_template('edit_astronauts.html', mission=mission, astronauts=astronauts, current_participants_ids=current_participants_ids)
 	else:
 		return redirect(url_for('login_company'))
 
