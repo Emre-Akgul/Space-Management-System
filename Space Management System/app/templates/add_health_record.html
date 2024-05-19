@@ -24,6 +24,15 @@
 </head>
 <body>
     <h1>Add Health Record for Astronaut {{ user_id }}</h1>
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        {% for category, message in messages %}
+          <div class="alert alert-{{ category }}">{{ message }}</div>
+        {% endfor %}
+      {% endif %}
+    {% endwith %}
+
     <form action="{{ url_for('add_health_record', user_id=user_id) }}" method="post">
         <div>
             <label for="checkup_date">Checkup Date:</label>
