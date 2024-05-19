@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <style>
+    table, th, td {
+        border: 1px solid black;
+        border-collapse: collapse;
+    }
+    </style>
+
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>All Astronauts</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+</head>
+<body>
+    <h1>All Astronauts</h1>
+    <table>
+        <thead>
+            <tr>
+                <th>Username</th>
+                <th>Name</th>
+                <th>Email</th>
+                <th>Date of Birth</th>
+                <th>Nationality</th>
+                <th>Experience Level</th>
+                <th>Preferred Role</th>
+                <th>Company Address</th>
+                <th>Industry Sector</th>
+                <th>Company Website</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for astronaut in astronauts %}
+            <tr>
+                <td><a href="{{ url_for('astronaut_profile', user_id=astronaut.user_id) }}">{{ astronaut.username }}</a></td>
+                <td>{{ astronaut.name }}</td>
+                <td>{{ astronaut.email }}</td>
+                <td>{{ astronaut.date_of_birth }}</td>
+                <td>{{ astronaut.nationality }}</td>
+                <td>{{ astronaut.experience_level }}</td>
+                <td>{{ astronaut.preferred_role }}</td>
+                <td>{{ astronaut.address }}</td>
+                <td>{{ astronaut.industry_sector }}</td>
+                <td><a href="{{ astronaut.website }}">{{ astronaut.website }}</a></td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</body>
+</html>
+
