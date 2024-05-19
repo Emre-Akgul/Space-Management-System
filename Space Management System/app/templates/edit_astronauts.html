@@ -59,8 +59,14 @@
 				{% for astronaut in astronauts %}
 				<div class="astronaut-item">
 					<h2>{{ astronaut.astronaut_name }}</h2>
-					<input type="checkbox" name="astronauts" value="{{ astronaut.astronaut_id }}"
-						{% if astronaut.astronaut_id in current_participants_ids %} checked {% endif %}>
+					<label>
+						<input type="checkbox" name="astronauts" value="{{ astronaut.astronaut_id }}"
+							{% if astronaut.astronaut_id in current_participants_ids %} checked {% endif %}
+							{% if astronaut_health_status[astronaut.astronaut_id] == 'Injured' %} disabled {% endif %}>
+						{% if astronaut_health_status[astronaut.astronaut_id] == 'Injured' %}
+						<span style="color: red;">(Injured)</span>
+						{% endif %}
+					</label>
 				</div>
 				{% endfor %}
 			</div>

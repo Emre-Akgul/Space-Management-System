@@ -908,9 +908,10 @@ def change_role(user_id):
 def edit_astronauts(mission_id):
 	if 'loggedin' in session:
 		cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
-		
+
 		cursor.execute('SELECT * FROM space_mission WHERE mission_id = %s', (mission_id,))
 		mission = cursor.fetchone()
+		mission_launch_date = mission['launch_date']
 
 		manager_comp_id = session['userid']
 		cursor.execute('''
@@ -928,6 +929,25 @@ def edit_astronauts(mission_id):
 		''', (mission_id,))
 		current_participants = cursor.fetchall()
 		current_participants_ids = {participant['astronaut_id'] for participant in current_participants}
+
+		astronaut_health_status = {}
+		for astronaut in astronauts:
+			cursor.execute('''
+				SELECT expected_ready_time 
+				FROM Health_record 
+				WHERE astronaut_id = %s AND fitness_level = 'Injured'
+				ORDER BY checkup_date DESC 
+				LIMIT 1
+			''', (astronaut['astronaut_id'],))
+			health_record = cursor.fetchone()
+			if health_record:
+				expected_ready_time = health_record['expected_ready_time']
+				if expected_ready_time.date() >= mission_launch_date:
+					astronaut_health_status[astronaut['astronaut_id']] = 'Injured'
+				else:
+					astronaut_health_status[astronaut['astronaut_id']] = 'Healthy'
+			else:
+				astronaut_health_status[astronaut['astronaut_id']] = 'Healthy'
 
 		if request.method == 'POST':
 			selected_astronauts = request.form.getlist('astronauts')
@@ -953,7 +973,7 @@ def edit_astronauts(mission_id):
 			flash('Astronauts updated successfully!', 'success')
 			return redirect(url_for('main_page'))
 
-		return render_template('edit_astronauts.html', mission=mission, astronauts=astronauts, current_participants_ids=current_participants_ids)
+		return render_template('edit_astronauts.html', mission=mission, astronauts=astronauts, current_participants_ids=current_participants_ids, astronaut_health_status=astronaut_health_status)
 	else:
 		return redirect(url_for('login_company'))
 
