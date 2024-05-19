@@ -258,11 +258,11 @@ def mission_details(mission_id):
 
 @app.route('/biddings')
 def biddings():
-    if 'loggedin' not in session or 'user_id' not in session:
+    if 'loggedin' not in session or 'userid' not in session:
         flash('You need to login to view this page.', 'danger')
         return redirect(url_for('login_company'))
 
-    company_id = session['user_id']
+    company_id = session['userid']
     cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
 
     # Fetch missions and their bids
@@ -352,7 +352,7 @@ def managed_missions():
     if 'loggedin' not in session:
         return redirect(url_for('login_company'))
 
-    manager_id = session['user_id']
+    manager_id = session['userid']
     cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
 
     # Fetch missions managed by the logged-in company along with the creator company name and allocated spaceship name
@@ -417,7 +417,7 @@ def my_ships():
     if 'loggedin' not in session:
         return redirect(url_for('login_company'))
 
-    owner_id = session['user_id']
+    owner_id = session['userid']
     cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
     cursor.execute("SELECT spaceship_id, spaceship_name, type, status FROM Spaceship WHERE owner_comp_id = %s", (owner_id,))
     ships = cursor.fetchall()
@@ -438,7 +438,7 @@ def add_ship():
     if 'loggedin' not in session:
         return redirect(url_for('login_company'))
 
-    owner_id = session['user_id']
+    owner_id = session['userid']
     spaceship_name = request.form.get('spaceship_name')
     type = request.form.get('type')
     capacity = request.form.get('capacity')
