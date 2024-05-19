@@ -295,6 +295,7 @@ def biddings():
     cursor.close()
     return render_template('biddings.html', missions=missions)
 
+
 @app.route('/handle_bid/<int:bid_id>/<int:mission_id>', methods=['POST'])
 def handle_bid(bid_id, mission_id):
     if 'loggedin' not in session:
@@ -346,7 +347,6 @@ def handle_bid(bid_id, mission_id):
 
     flash('Bid accepted, mission updated, and payment processed!', 'success')
     return redirect(url_for('biddings'))
-
 
 @app.route('/managed_missions')
 def managed_missions():
@@ -706,8 +706,9 @@ def astronaut_profile(user_id):
 
     # Fetch training records
     cursor.execute('''
-        SELECT Training_program.program_id, Training_program.name, Training_program.description, Role.role_name AS required_for, 
-               astronaut_training.completion_date
+        SELECT Training_program.program_id, Training_program.name, Training_program.description, 
+               Role.role_name AS required_for, astronaut_training.completion_date, 
+               Training_program.difficulty
         FROM astronaut_training
         JOIN Training_program ON astronaut_training.program_id = Training_program.program_id
         JOIN Role ON Training_program.required_for = Role.role_id
@@ -717,13 +718,26 @@ def astronaut_profile(user_id):
 
     # Fetch available training programs
     cursor.execute('''
-        SELECT Training_program.program_id, Training_program.name, Training_program.description, Role.role_name AS required_for
-        FROM Training_program
-        JOIN Role ON Training_program.required_for = Role.role_id
-        WHERE Training_program.program_id NOT IN (
-            SELECT program_id FROM astronaut_training WHERE astronaut_id = %s
+        SELECT tp.program_id, tp.name, tp.description, r.role_name AS required_for, tp.difficulty
+        FROM Training_program tp
+        JOIN Role r ON tp.required_for = r.role_id
+        WHERE NOT EXISTS (
+            SELECT 1
+            FROM astronaut_training at
+            JOIN Training_program completed_tp ON at.program_id = completed_tp.program_id
+            WHERE at.astronaut_id = %s
+            AND completed_tp.required_for = tp.required_for
+            AND (
+                (tp.difficulty = 'Essential' AND completed_tp.difficulty IN ('Intermediate', 'Advanced'))
+                OR (tp.difficulty = 'Intermediate' AND completed_tp.difficulty = 'Advanced')
+            )
         )
-    ''', (user_id,))
+        AND tp.program_id NOT IN (
+            SELECT program_id 
+            FROM astronaut_training 
+            WHERE astronaut_id = %s
+        )
+    ''', (user_id, user_id))
     available_training_programs = cursor.fetchall()
 
     # Fetch roles
@@ -742,17 +756,53 @@ def astronaut_profile(user_id):
 def apply_training(user_id, program_id):
     if 'userid' in session and session['userid'] == user_id:
         cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
-        cursor.execute('''
-            INSERT INTO astronaut_training (astronaut_id, program_id, completion_date)
-            VALUES (%s, %s, NULL)
-        ''', (user_id, program_id))
-        mysql.connection.commit()
 
-        flash('Training program application submitted successfully', 'success')
+        # Fetch the difficulty level and required role of the applied program
+        cursor.execute('''
+            SELECT difficulty, required_for 
+            FROM Training_program 
+            WHERE program_id = %s
+        ''', (program_id,))
+        applied_program = cursor.fetchone()
+
+        if applied_program:
+            difficulty = applied_program['difficulty']
+            required_for = applied_program['required_for']
+
+            # Insert the new training program application
+            cursor.execute('''
+                INSERT INTO astronaut_training (astronaut_id, program_id, completion_date)
+                VALUES (%s, %s, NULL)
+            ''', (user_id, program_id))
+
+            # Determine the difficulty levels to delete based on the applied program's difficulty
+            if difficulty == 'Advanced':
+                levels_to_delete = ('Essential', 'Intermediate')
+            elif difficulty == 'Intermediate':
+                levels_to_delete = ('Essential',)
+            else:
+                levels_to_delete = ()
+
+            # Delete lower-level difficulty training programs if applicable
+            if levels_to_delete:
+                cursor.execute('''
+                    DELETE at
+                    FROM astronaut_training at
+                    JOIN Training_program tp ON at.program_id = tp.program_id
+                    WHERE at.astronaut_id = %s 
+                    AND tp.required_for = %s
+                    AND tp.difficulty IN %s
+                ''', (user_id, required_for, levels_to_delete))
+
+            mysql.connection.commit()
+            flash('Training program application submitted successfully', 'success')
+        else:
+            flash('Training program not found', 'danger')
     else:
         flash('You are not authorized to perform this action', 'danger')
 
     return redirect(url_for('astronaut_profile', user_id=user_id))
+
 
 @app.route('/add_health_record/<int:user_id>', methods=['GET', 'POST'])
 def add_health_record(user_id):

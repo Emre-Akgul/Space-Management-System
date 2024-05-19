@@ -1,18 +1,17 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{{ astronaut.name }}'s Profile</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
-    <style>
-        table, th, td {
-            border: 1px solid black;
-        }
-    </style>
-</head>
-<body>
+{% extends "layout.html" %}
+
+{% block content %}
+<div class="container mt-5">
     <h1>{{ astronaut.name }}'s Profile</h1>
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            {% for category, message in messages %}
+            <div class="alert alert-{{ category }}">{{ message }}</div>
+            {% endfor %}
+        {% endif %}
+    {% endwith %}
+
     <div class="profile">
         <p><strong>Username:</strong> {{ astronaut.username }}</p>
         <p><strong>Email:</strong> {{ astronaut.email }}</p>
@@ -21,16 +20,18 @@
         <p><strong>Experience Level:</strong> {{ astronaut.experience_level }}</p>
         <p><strong>Role:</strong> {{ astronaut.preferred_role }}</p>
         {% if is_own_profile %}
-            <form action="{{ url_for('change_role', user_id=astronaut.user_id) }}" method="post">
-                <label for="role_id">Change Preferred Role:</label>
-                <select id="role_id" name="role_id" required>
-                    {% for role in roles %}
-                        <option value="{{ role.role_id }}" {% if role.role_id == astronaut.role_id %}selected{% endif %}>
-                            {{ role.role_name }}
-                        </option>
-                    {% endfor %}
-                </select>
-                <button type="submit">Update Role</button>
+            <form action="{{ url_for('change_role', user_id=astronaut.user_id) }}" method="post" class="mb-4">
+                <div class="form-group">
+                    <label for="role_id">Change Preferred Role:</label>
+                    <select id="role_id" name="role_id" class="form-control" required>
+                        {% for role in roles %}
+                            <option value="{{ role.role_id }}" {% if role.role_id == astronaut.role_id %}selected{% endif %}>
+                                {{ role.role_name }}
+                            </option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <button type="submit" class="btn btn-secondary">Update Role</button>
             </form>
         {% endif %}
 
@@ -43,7 +44,7 @@
     </div>
 
     <h2>Past Missions</h2>
-    <table>
+    <table class="table table-bordered">
         <thead>
             <tr>
                 <th>Mission Name</th>
@@ -75,7 +76,7 @@
     </table>
 
     <h2>Upcoming Missions</h2>
-    <table>
+    <table class="table table-bordered">
         <thead>
             <tr>
                 <th>Mission Name</th>
@@ -106,8 +107,11 @@
         </tbody>
     </table>
 
-    <h2>Health Records</h2>
-    <table>
+<h2 class="d-flex justify-content-between align-items-center">
+    Health Records 
+    <a href="{{ url_for('add_health_record', user_id=astronaut.user_id) }}" class="btn btn-secondary">Add Health Record</a>
+</h2>
+    <table class="table table-bordered">
         <thead>
             <tr>
                 <th>Checkup Date</th>
@@ -129,7 +133,7 @@
     </table>
 
     <h2>Training Records</h2>
-    <table>
+    <table class="table table-bordered">
         <thead>
             <tr>
                 <th>Program Name</th>
@@ -152,7 +156,7 @@
 
     {% if is_own_profile %}
     <h2>Available Training Programs</h2>
-    <table>
+    <table class="table table-bordered">
         <thead>
             <tr>
                 <th>Program Name</th>
@@ -169,7 +173,7 @@
                 <td>{{ program.required_for }}</td>
                 <td>
                     <form action="{{ url_for('apply_training', user_id=astronaut.user_id, program_id=program.program_id) }}" method="post">
-                        <button type="submit" class="btn btn-primary">Apply</button>
+                        <button type="submit" class="btn btn-secondary">Apply</button>
                     </form>
                 </td>
             </tr>
@@ -177,9 +181,6 @@
         </tbody>
     </table>
 
-    <a href="{{ url_for('add_health_record', user_id=astronaut.user_id) }}">Add Health Record</a>
     {% endif %}
-
-    <a href="{{ url_for('all_astronauts') }}">Back to All Astronauts</a>
-</body>
-</html>
+</div>
+{% endblock %}
