@@ -246,7 +246,7 @@ def mission_details(mission_id):
         bid_amount = request.form.get('bid_amount')
         # Insert bid into database
         cursor.execute('INSERT INTO bid (bid_amount, bid_date, status, company_id, mission_id) VALUES (%s, CURDATE(), %s, %s, %s)',
-                       (bid_amount, 'Submitted', session.get('user_id'), mission_id))
+                       (bid_amount, 'Submitted', session.get('userid'), mission_id))
         mysql.connection.commit()
         # Flash success message
         flash(f'Bid submitted successfully for mission {mission["mission_name"]}!', 'success')
@@ -293,6 +293,7 @@ def biddings():
 
     cursor.close()
     return render_template('biddings.html', missions=missions)
+
 
 @app.route('/handle_bid/<int:bid_id>/<int:mission_id>', methods=['POST'])
 def handle_bid(bid_id, mission_id):
@@ -345,7 +346,6 @@ def handle_bid(bid_id, mission_id):
 
     flash('Bid accepted, mission updated, and payment processed!', 'success')
     return redirect(url_for('biddings'))
-
 
 @app.route('/managed_missions')
 def managed_missions():
