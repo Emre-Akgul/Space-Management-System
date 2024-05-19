@@ -909,11 +909,9 @@ def edit_astronauts(mission_id):
 	if 'loggedin' in session:
 		cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
 		
-		# Fetch the mission details
 		cursor.execute('SELECT * FROM space_mission WHERE mission_id = %s', (mission_id,))
 		mission = cursor.fetchone()
 
-		# Fetch the astronauts of the company
 		manager_comp_id = session['userid']
 		cursor.execute('''
 			SELECT a.user_id AS astronaut_id, u.name AS astronaut_name 
@@ -926,11 +924,27 @@ def edit_astronauts(mission_id):
 		if request.method == 'POST':
 			selected_astronauts = request.form.getlist('astronauts')
 
-			for astronaut_id in selected_astronauts:
+			cursor.execute('SELECT astronaut_id FROM participates WHERE mission_id = %s', (mission_id,))
+			current_participants = cursor.fetchall()
+			current_participants_ids = {participant['astronaut_id'] for participant in current_participants}
+
+			selected_astronaut_ids = set(map(int, selected_astronauts))
+
+			astronauts_to_add = selected_astronaut_ids - current_participants_ids
+			astronauts_to_remove = current_participants_ids - selected_astronaut_ids
+
+			for astronaut_id in astronauts_to_add:
 				cursor.execute('''
 					INSERT INTO participates (mission_id, astronaut_id) 
 					VALUES (%s, %s)
 				''', (mission_id, astronaut_id))
+
+			for astronaut_id in astronauts_to_remove:
+				cursor.execute('''
+					DELETE FROM participates
+					WHERE mission_id = %s AND astronaut_id = %s
+				''', (mission_id, astronaut_id))
+
 			mysql.connection.commit()
 
 			flash('Astronauts updated successfully!', 'success')

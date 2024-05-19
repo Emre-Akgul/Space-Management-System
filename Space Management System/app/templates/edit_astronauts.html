@@ -59,7 +59,8 @@
 				{% for astronaut in astronauts %}
 				<div class="astronaut-item">
 					<h2>{{ astronaut.astronaut_name }}</h2>
-					<input type="checkbox" name="astronauts" value="{{ astronaut.astronaut_id }}">
+					<input type="checkbox" name="astronauts" value="{{ astronaut.astronaut_id }}"
+						{% if astronaut.astronaut_id in selected_astronauts %} checked {% endif %}>
 				</div>
 				{% endfor %}
 			</div>
