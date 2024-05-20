@@ -165,6 +165,31 @@ CREATE TABLE Training_program (
     FOREIGN KEY (required_for) REFERENCES Role(role_id)
 );
 
+CREATE VIEW MissionSummary AS
+SELECT 
+    mission_id,
+    mission_name, 
+    status, 
+    launch_date, 
+    cost
+FROM 
+    space_mission;
+
+
+CREATE VIEW BidSummary AS
+SELECT 
+    b.bid_id,
+    b.bid_amount, 
+    u.name AS bidder_name,
+    m.mission_name
+FROM 
+    bid b
+JOIN 
+    User u ON b.company_id = u.user_id
+JOIN 
+    space_mission m ON b.mission_id = m.mission_id;
+
+
 INSERT INTO Training_program (name, description, required_for, difficulty) VALUES 
 ('Commander Essential Training', 'This is the essential training program for the commander role.', (SELECT role_id FROM Role WHERE role_name = 'Commander'), 'Essential'),
 ('Commander Intermediate Training', 'This is the intermediate training program for the commander role.', (SELECT role_id FROM Role WHERE role_name = 'Commander'), 'Intermediate'),
@@ -336,3 +361,15 @@ VALUES
 INSERT INTO participates (astronaut_id, mission_id) VALUES 
 (4, (SELECT mission_id FROM space_mission WHERE mission_name = 'Mission Past Alpha'));
 
+DELIMITER $$
+
+CREATE TRIGGER update_mission_status
+BEFORE UPDATE ON space_mission
+FOR EACH ROW
+BEGIN
+    IF NEW.launch_date <= CURDATE() AND (NEW.status = 'Planned' OR NEW.status = 'Bidding') THEN
+        SET NEW.status = 'In Progress';
+    END IF;
+END$$
+
+DELIMITER ;
