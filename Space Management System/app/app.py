@@ -142,30 +142,38 @@ def register_astronaut():
         if not (username and name and password and email and date_of_birth and nationality):
             message = 'Please fill out all required fields!'
         else:
-            cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
+            try:
+                dob = datetime.strptime(date_of_birth, '%Y-%m-%d')
+                current_date = datetime.now()
+                age = (current_date - dob).days // 365
 
-            # Check if username already exists
-            cursor.execute('SELECT user_id FROM User WHERE username = %s', (username,))
-            if cursor.fetchone():
-                message = 'Username already taken. Please choose a different username.'
-            else:
-                # Hash password before storing it
-                hashed_password = bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt())
+                if age < 18:
+                    message = 'Astronaut must be older than 18 years.'
+                else:
+                    cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
 
-                # Insert new user into User table
-                cursor.execute('INSERT INTO User (username, name, password, email) VALUES (%s, %s, %s, %s)',
-                               (username, name, hashed_password, email))
-                user_id = cursor.lastrowid  # Fetch the last inserted id
+                    # Check if username already exists
+                    cursor.execute('SELECT user_id FROM User WHERE username = %s', (username,))
+                    if cursor.fetchone():
+                        message = 'Username already taken. Please choose a different username.'
+                    else:
+                        # Hash password before storing it
+                        hashed_password = bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt())
 
-                # Insert new astronaut into Astronaut table
-                cursor.execute('INSERT INTO Astronaut (user_id, company_id, date_of_birth, nationality, role_id) VALUES (%s, %s, %s, %s, %s)',
-                               (user_id, company_id, date_of_birth, nationality, None))
-                mysql.connection.commit()
-                message = 'Astronaut successfully registered!'
+                        # Insert new user into User table
+                        cursor.execute('INSERT INTO User (username, name, password, email) VALUES (%s, %s, %s, %s)',
+                                       (username, name, hashed_password, email))
+                        user_id = cursor.lastrowid  # Fetch the last inserted id
+
+                        # Insert new astronaut into Astronaut table
+                        cursor.execute('INSERT INTO Astronaut (user_id, company_id, date_of_birth, nationality, role_id) VALUES (%s, %s, %s, %s, %s)',
+                                       (user_id, company_id, date_of_birth, nationality, None))
+                        mysql.connection.commit()
+                        message = 'Astronaut successfully registered!'
+            except ValueError:
+                message = 'Invalid date format.'
 
     return render_template('register_astronaut.html', message=message, companies=companies, roles=ROLES)
-
-
 
 
 @app.route('/missions', methods=['GET'])
@@ -860,28 +868,38 @@ def add_health_record(user_id):
     if session.get('userid') != user_id:
         flash('You are not authorized to add health records for this astronaut', 'danger')
         return redirect(url_for('astronaut_profile', user_id=user_id))
-    
+
     if request.method == 'POST':
         checkup_date = request.form['checkup_date']
         health_status = request.form['health_status']
         fitness_level = request.form['fitness_level']
         expected_ready_time = request.form['expected_ready_time']
-        
+
         if not (checkup_date and health_status and fitness_level):
             flash('Please fill out all required fields', 'danger')
         else:
-            cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
-            if not expected_ready_time:
-                expected_ready_time = None
-            cursor.execute('''
-                INSERT INTO Health_record (checkup_date, health_status, fitness_level, expected_ready_time, astronaut_id)
-                VALUES (%s, %s, %s, %s, %s)
-            ''', (checkup_date, health_status, fitness_level, expected_ready_time, user_id))
-            mysql.connection.commit()
-            flash('Health record added successfully', 'success')
-            return redirect(url_for('astronaut_profile', user_id=user_id))
+            try:
+                checkup_date_obj = datetime.strptime(checkup_date, '%Y-%m-%d')
+                current_date = datetime.now()
+
+                if checkup_date_obj > current_date:
+                    flash('Checkup date cannot be later than the current date', 'danger')
+                else:
+                    cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
+                    if not expected_ready_time:
+                        expected_ready_time = None
+                    cursor.execute('''
+                        INSERT INTO Health_record (checkup_date, health_status, fitness_level, expected_ready_time, astronaut_id)
+                        VALUES (%s, %s, %s, %s, %s)
+                    ''', (checkup_date, health_status, fitness_level, expected_ready_time, user_id))
+                    mysql.connection.commit()
+                    flash('Health record added successfully', 'success')
+                    return redirect(url_for('astronaut_profile', user_id=user_id))
+            except ValueError:
+                flash('Invalid date format', 'danger')
 
     return render_template('add_health_record.html', user_id=user_id)
+
 
 @app.route('/change_role/<int:user_id>', methods=['POST'])
 def change_role(user_id):
