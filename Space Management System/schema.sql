@@ -10,6 +10,10 @@ CREATE TABLE User (
 	email VARCHAR(256) NOT NULL
 );
 
+ALTER TABLE User
+ADD UNIQUE (username),
+ADD UNIQUE (email);
+
 CREATE TABLE launch_vehicle (
 	launch_vehicle_id INT AUTO_INCREMENT PRIMARY KEY,
 	launch_vehicle_name VARCHAR(255),
@@ -122,6 +126,10 @@ CREATE TABLE Astronaut (
     FOREIGN KEY (company_id) REFERENCES Company(user_id),
     FOREIGN KEY (role_id) REFERENCES Role(role_id)
 );
+
+ALTER TABLE Astronaut
+ADD CONSTRAINT chk_astronaut_min_age
+CHECK (TIMESTAMPDIFF(YEAR, date_of_birth, CURDATE()) >= 18);
 
 INSERT INTO Role (role_name) VALUES
 ('Not Assigned'),
