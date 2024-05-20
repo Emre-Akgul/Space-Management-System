@@ -33,6 +33,15 @@
                     <li class="nav-item">
                         <a class="nav-link" href="{{ url_for('my_ships') }}">My Ships</a>
                     </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('create_space_mission') }}">Create Space Mission</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('manage_missions') }}">Manage Missions</a>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('missions') }}">Missions</a>
+    
+                    </li>
                     {% endif %}
                 {% endif %}
                 {% if 'loggedin' not in session %}
@@ -52,15 +61,7 @@
 
                     <a class="nav-link" href="{{ url_for('login_admin') }}">Login Admin</a>
 </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="{{ url_for('create_space_mission') }}">Create Space Mission</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="{{ url_for('manage_missions') }}">Manage Missions</a>
-                <li class="nav-item">
-                    <a class="nav-link" href="{{ url_for('missions') }}">Missions</a>
-
-                </li>
+                
                 {% elif 'admin' in session %}
                 <li class="nav-item">
 
@@ -72,14 +73,8 @@
                 <li class="nav-item">
                     <a class="nav-link" href="{{ url_for('managed_ships') }}">Managed Ships</a>
 </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="{{ url_for('logout') }}">Logout</a>
                 </li>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="{{ url_for('biddings') }}">Biddings</a>
-
-                </li>
+                
                 <li class="nav-item">
                     <a class="nav-link" href="{{ url_for('managed_missions') }}">Managed Missions</a>
                 </li>
