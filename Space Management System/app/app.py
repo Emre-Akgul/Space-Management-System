@@ -684,7 +684,7 @@ def astronaut_profile(user_id):
 
     # Fetch past missions
     cursor.execute('''
-        SELECT space_mission.mission_name, space_mission.description, space_mission.status, 
+        SELECT space_mission.mission_id, space_mission.mission_name, space_mission.description, space_mission.status, 
                space_mission.launch_date, space_mission.destination, space_mission.cost, 
                space_mission.duration, space_mission.crew_size, space_mission.required_roles
         FROM participates
@@ -695,7 +695,7 @@ def astronaut_profile(user_id):
 
     # Fetch upcoming missions
     cursor.execute('''
-        SELECT space_mission.mission_name, space_mission.description, space_mission.status, 
+        SELECT space_mission.mission_id, space_mission.mission_name, space_mission.description, space_mission.status, 
                space_mission.launch_date, space_mission.destination, space_mission.cost, 
                space_mission.duration, space_mission.crew_size, space_mission.required_roles
         FROM participates

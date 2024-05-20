@@ -312,3 +312,12 @@ INSERT INTO Astronaut (user_id, company_id, date_of_birth, nationality, experien
 INSERT INTO Astronaut (user_id, company_id, date_of_birth, nationality, experience_level, role_id) VALUES (26, 3, '1986-11-21', 'CAN', 'Expert', 3);
 INSERT INTO Astronaut (user_id, company_id, date_of_birth, nationality, experience_level, role_id) VALUES (27, 1, '1993-09-09', 'IND', 'Advanced', 4);
 INSERT INTO Astronaut (user_id, company_id, date_of_birth, nationality, experience_level, role_id) VALUES (28, 2, '1988-03-15', 'TUR', 'Intermediate', 5);
+
+-- Insert a past mission
+INSERT INTO space_mission (mission_id, mission_name, description, status, launch_date, destination, cost, duration, crew_size, required_roles, bid_deadline, creator_comp_id, manager_comp_id, spaceship_id)
+VALUES 
+(1, 'Mission Past Alpha', 'Completed exploration mission to Mars.', 'Completed', '2022-07-20', 'Mars', 50000000, 180, 10, 'Commander, Pilot, Mission Specialist, Flight Engineer, Medical Doctor', '2021-06-20', 1, 2, 1);
+
+-- Assign Astronaut 1 to the past mission
+INSERT INTO participates (astronaut_id, mission_id) VALUES 
+(4, (SELECT mission_id FROM space_mission WHERE mission_name = 'Mission Past Alpha'));
