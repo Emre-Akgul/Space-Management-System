@@ -16,11 +16,16 @@
         {% for astronaut in astronauts %}
         <div class="card mb-3">
             <div class="card-header">
-                astronaut Name: {{ astronaut.username }} (Status: {{ astronaut.permission_level }})
+                astronaut Name: {{ astronaut.username }}
             </div>
             <div class="card-body">
                 <ul class="list-group list-group-flush">
-                    <li class="list-group-item"><strong>astronaut ID:</strong> {{ astronaut.user_id }}</li>
+                    <li class="list-group-item"><strong>Astronaut ID:</strong> {{ astronaut.user_id }}</li>
+                    <li class="list-group-item"><strong>Astronaut Name:</strong> {{ astronaut.name }}</li>
+                    <li class="list-group-item"><strong>Company ID:</strong> {{ astronaut.company_id }}</li>
+                    <li class="list-group-item"><strong>Company Website:</strong> {{ astronaut.website }}</li>
+                    <li class="list-group-item"><strong>Date of Birth:</strong> {{ astronaut.date_of_birth }}</li>
+                    <li class="list-group-item"><strong>Nationality:</strong> {{ astronaut.nationality }}</li>
                 </ul>
                 <form method="POST" action="{{ url_for('managed_astronauts') }}">
                     <input type="hidden" name="user_id" value="{{ astronaut.user_id }}">

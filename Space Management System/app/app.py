@@ -280,7 +280,7 @@ def managed_astronauts():
         return redirect(url_for('managed_astronauts'))
     if request.method == 'GET':
         cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
-        cursor.execute('SELECT * FROM Astronaut INNER JOIN User ON User.user_id = Astronaut.user_id')
+        cursor.execute('SELECT * FROM Astronaut INNER JOIN User ON User.user_id = Astronaut.user_id INNER JOIN Company ON Astronaut.company_id = Company.user_id')
         astronauts = cursor.fetchall()
         return render_template('managed_astronauts.html', astronauts=astronauts)
 
