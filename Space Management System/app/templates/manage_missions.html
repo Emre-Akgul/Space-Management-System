@@ -1,71 +1,60 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-	<meta charset="UTF-8">
-	<meta name="viewport" content="width=device-width, initial-scale=1.0">
-	<title>Manage Space Missions</title>
-	<link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
-	<style>
-		body {
-			font-family: Arial, sans-serif;
-			background-color: #f0f8ff;
-			padding: 20px;
-		}
-		.container {
-			max-width: 800px;
-			margin: 0 auto;
-			background-color: #fff;
-			padding: 20px;
-			box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-		}
-		h1 {
-			text-align: center;
-			color: #333;
-		}
-		.btn {
-			display: inline-block;
-			padding: 10px 20px;
-			margin: 5px;
-			background-color: #007bff;
-			color: white;
-			text-align: center;
-			border-radius: 5px;
-			text-decoration: none;
-			cursor: pointer;
-		}
-		.btn:hover {
-			background-color: #0056b3;
-		}
-		.mission-list {
-			margin-top: 20px;
-		}
-		.mission-item {
-			background-color: #e9ecef;
-			padding: 10px;
-			margin-bottom: 10px;
-			border-radius: 5px;
-		}
-		.mission-item h2 {
-			margin-top: 0;
-			color: #007bff;
-		}
-		.back-btn {
-			display: block;
-			text-align: center;
-			margin-top: 20px;
-			padding: 10px;
-			background-color: #007bff;
-			color: white;
-			text-decoration: none;
-			border-radius: 5px;
-		}
-		.back-btn:hover {
-			background-color: #0056b3;
-		}
-	</style>
-</head>
-<body>
-	<div class="container">
+{% extends "layout.html" %}
+
+{% block content %}
+<style>
+	.container {
+		max-width: 800px;
+		margin: 5rem auto;
+		background-color: #fff;
+		padding: 20px;
+		box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+	}
+	h1 {
+		text-align: center;
+		color: #333;
+	}
+	.btn {
+		display: inline-block;
+		padding: 10px 20px;
+		margin: 5px;
+		background-color: #007bff;
+		color: white;
+		text-align: center;
+		border-radius: 5px;
+		text-decoration: none;
+		cursor: pointer;
+	}
+	.btn:hover {
+		background-color: #0056b3;
+	}
+	.mission-list {
+		margin-top: 20px;
+	}
+	.mission-item {
+		background-color: #e9ecef;
+		padding: 10px;
+		margin-bottom: 10px;
+		border-radius: 5px;
+	}
+	.mission-item h2 {
+		margin-top: 0;
+		color: #007bff;
+	}
+	.back-btn {
+		display: block;
+		text-align: center;
+		margin-top: 20px;
+		padding: 10px;
+		background-color: #007bff;
+		color: white;
+		text-decoration: none;
+		border-radius: 5px;
+	}
+	.back-btn:hover {
+		background-color: #0056b3;
+	}
+</style>
+	<div class="container my-5">
 		<h1>Manage Space Missions</h1>
 
 		<form method="POST" action="{{ url_for('manage_missions') }}">
@@ -103,5 +92,4 @@
 		
 		<a href="{{ url_for('main_page') }}" class="back-btn">Go Back</a>
 	</div>
-</body>
-</html>
+{% endblock %}

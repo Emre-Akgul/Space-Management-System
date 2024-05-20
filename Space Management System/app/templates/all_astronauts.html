@@ -12,6 +12,7 @@
             {% endif %}
         {% endwith %}
 
+        {% if astronauts %}
         <table class="table">
             <thead>
                 <tr>
@@ -44,5 +45,6 @@
                 {% endfor %}
             </tbody>
         </table>
+        {% endif %}
     </div>
 {% endblock %}
