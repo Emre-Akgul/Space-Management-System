@@ -1,5 +1,6 @@
 CREATE DATABASE IF NOT EXISTS spaceapp;
 
+
 USE spaceapp;
 
 CREATE TABLE User (
@@ -9,6 +10,10 @@ CREATE TABLE User (
 	password VARCHAR(256) NOT NULL,
 	email VARCHAR(256) NOT NULL
 );
+
+ALTER TABLE User
+ADD UNIQUE (username),
+ADD UNIQUE (email);
 
 CREATE TABLE launch_vehicle (
 	launch_vehicle_id INT AUTO_INCREMENT PRIMARY KEY,
@@ -95,6 +100,8 @@ CREATE TABLE Admin (
 	FOREIGN KEY (user_id) REFERENCES User(user_id)
 );
 
+
+
 CREATE TABLE Company (
 	user_id INT PRIMARY KEY,
 	address VARCHAR(256) NOT NULL,
@@ -119,6 +126,10 @@ CREATE TABLE Astronaut (
     FOREIGN KEY (company_id) REFERENCES Company(user_id),
     FOREIGN KEY (role_id) REFERENCES Role(role_id)
 );
+
+ALTER TABLE Astronaut
+ADD CONSTRAINT chk_astronaut_min_age
+CHECK (TIMESTAMPDIFF(YEAR, date_of_birth, CURDATE()) >= 18);
 
 INSERT INTO Role (role_name) VALUES
 ('Not Assigned'),
@@ -313,6 +324,9 @@ INSERT INTO Astronaut (user_id, company_id, date_of_birth, nationality, experien
 INSERT INTO Astronaut (user_id, company_id, date_of_birth, nationality, experience_level, role_id) VALUES (27, 1, '1993-09-09', 'IND', 'Advanced', 4);
 INSERT INTO Astronaut (user_id, company_id, date_of_birth, nationality, experience_level, role_id) VALUES (28, 2, '1988-03-15', 'TUR', 'Intermediate', 5);
 
+Insert into User (username, name, password, email) values ('admin', 'Admin', 'admin', 'admin@admin.com');
+Insert into Admin (user_id, permission_level) values (29, 'SuperAdmin');
+
 -- Insert a past mission
 INSERT INTO space_mission (mission_id, mission_name, description, status, launch_date, destination, cost, duration, crew_size, required_roles, bid_deadline, creator_comp_id, manager_comp_id, spaceship_id)
 VALUES 
@@ -321,3 +335,4 @@ VALUES
 -- Assign Astronaut 1 to the past mission
 INSERT INTO participates (astronaut_id, mission_id) VALUES 
 (4, (SELECT mission_id FROM space_mission WHERE mission_name = 'Mission Past Alpha'));
+

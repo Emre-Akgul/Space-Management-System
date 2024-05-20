@@ -1,0 +1,41 @@
+{% extends "layout.html" %}
+
+{% block content %}
+<div class="container mt-5">
+    <h2>Managed biddings</h2>
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            {% for category, message in messages %}
+            <div class="alert alert-{{ category }}">{{ message }}</div>
+            {% endfor %}
+        {% endif %}
+    {% endwith %}
+
+    {% if biddings %}
+        {% for bidding in biddings %}
+        <div class="card mb-3">
+            <div class="card-header">
+                bidding Name: {{ bidding.username }} (Status: {{ bidding.permission_level }})
+            </div>
+            <div class="card-body">
+                <ul class="list-group list-group-flush">
+                    <li class="list-group-item"><strong>bidding ID:</strong> {{ bidding.bid_id }}</li>
+                </ul>
+                <form method="POST" action="{{ url_for('managed_biddings') }}">
+                    <input type="hidden" name="bid_id" value="{{ bidding.bid_id }}">
+                    <div class="form-group mt-3">
+                        <label for="spacebidding">Remove bidding</label>
+                    </div>
+                    <button type="submit" class="btn btn-primary">Remove</button>
+                </form>
+            </div>
+        </div>
+        {% endfor %}
+    {% else %}
+        <div class="alert alert-info" role="alert">
+            No managed biddings available at the moment.
+        </div>
+    {% endif %}
+</div>
+{% endblock %}

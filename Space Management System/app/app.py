@@ -48,6 +48,7 @@ def login_company():
             session['loggedin'] = True
             session['userid'] = user['user_id'] 
             session['username'] = user['name']
+            session['company'] = True
             return redirect(url_for('main_page'))
         else:
             flash('Incorrect username/password!', 'danger')
@@ -112,6 +113,7 @@ def login_astronaut():
             session['loggedin'] = True
             session['userid'] = user['user_id']
             session['username'] = user['name']
+            session['astronaut'] = True
             return redirect(url_for('main_page'))
         else:
             flash('Incorrect username/password!', 'danger')
@@ -174,6 +176,163 @@ def register_astronaut():
                 message = 'Invalid date format.'
 
     return render_template('register_astronaut.html', message=message, companies=companies, roles=ROLES)
+
+
+@app.route('/login_admin', methods=['GET', 'POST'])
+def login_admin():
+    if request.method == 'POST':
+        username = request.form.get('username')
+        password = request.form.get('password')
+
+        # Username and password must not be empty
+        if not username or not password:
+            flash('Please enter both username and password!', 'danger')
+            return redirect(url_for('login_admin'))
+
+        cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
+
+        # Corrected SQL query to match the schema you've provided
+        cursor.execute('SELECT User.user_id, User.name, User.password, Admin.permission_level FROM User INNER JOIN Admin ON User.user_id = Admin.user_id WHERE User.username = %s', (username,))
+        
+        user = cursor.fetchone()
+        if user and password == user['password']:
+            session['admin'] = user['permission_level']
+            session['loggedin'] = True
+            session['userid'] = user['user_id'] 
+            session['username'] = user['name']
+            return redirect(url_for('main_page'))
+        elif user and bcrypt.checkpw(password.encode('utf-8'), user['password'].encode('utf-8')):
+            session['admin'] = user['permission_level']
+            session['loggedin'] = True
+            session['userid'] = user['user_id'] 
+            session['username'] = user['name']
+            return redirect(url_for('main_page'))
+        else:
+            flash('Incorrect username/password!', 'danger')
+
+    # If unsuccessful then remain in login
+    return render_template('login_admin.html')
+
+@app.route('/managed_admins', methods=['GET', 'POST'])
+def managed_admins():
+    if 'admin' not in session:
+            flash('You need to login as an admin to view this page.', 'danger')
+            return redirect(url_for('login_admin'))
+    elif session['admin'] != 'SuperAdmin':
+        flash('You need to be a superadmin to view this page.', 'danger')
+        return redirect(url_for('main_page'))
+    if request.method == 'POST':
+        user_id = request.form.get('user_id')
+        cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
+        cursor.execute('DELETE FROM Admin WHERE user_id = %s', (user_id,))
+        mysql.connection.commit()
+        flash('Admin deleted successfully, ID:' + user_id, 'success')
+        return redirect(url_for('managed_admins'))
+    elif request.method == 'GET':
+        cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
+        cursor.execute('SELECT User.user_id, User.username, User.name, Admin.permission_level FROM User INNER JOIN Admin ON User.user_id = Admin.user_id')
+        admins = cursor.fetchall()
+        cursor.execute('SELECT user_id, name, username FROM User WHERE user_id NOT IN (SELECT user_id FROM Admin)')
+        others = cursor.fetchall()
+        return render_template('managed_admins.html', admins=admins, others=others)
+    
+@app.route('/add_admin', methods=['POST'])
+def add_admin():
+    if 'admin' not in session:
+        flash('You need to login as an admin to view this page.', 'danger')
+        return redirect(url_for('login_admin'))
+    elif session['admin'] != 'SuperAdmin':
+        flash('You need to be a superadmin to view this page.', 'danger')
+        return redirect(url_for('main_page'))
+    user_id = request.form.get('user_id')
+    cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
+    cursor.execute('INSERT INTO Admin (user_id, permission_level) VALUES (%s, %s)', (user_id, 'Admin'))
+    mysql.connection.commit()
+    flash('Admin added successfully', 'success')
+    return redirect(url_for('managed_admins'))
+
+@app.route('/managed_companies', methods=['GET', 'POST'])
+def managed_companies():
+    if 'admin' not in session:
+            flash('You need to login as an admin to view this page.', 'danger')
+            return redirect(url_for('login_admin'))
+    if request.method == 'POST':
+        user_id = request.form.get('user_id')
+        cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
+        cursor.execute('SET FOREIGN_KEY_CHECKS=0;')
+        cursor.execute('DELETE FROM Company WHERE user_id = %s', (user_id,))
+        cursor.execute('DELETE FROM User WHERE user_id = %s', (user_id,))
+        cursor.execute('DELETE FROM bid WHERE company_id = %s', (user_id,))
+        cursor.execute('SET FOREIGN_KEY_CHECKS=1;')
+        mysql.connection.commit()
+        flash('Company deleted successfully, ID:' + user_id, 'success')
+        return redirect(url_for('managed_companies'))
+    elif request.method == 'GET':
+        cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
+        cursor.execute('SELECT * FROM Company INNER JOIN User ON User.user_id = Company.user_id')
+        companies = cursor.fetchall()
+        return render_template('managed_companies.html', companies=companies)
+    else:
+        flash('Invalid request method', 'danger')
+        return 'Invalid request method'
+
+@app.route('/managed_astronauts', methods=['GET', 'POST'])
+def managed_astronauts():
+    if 'admin' not in session:
+        flash('You need to login as an admin to view this page.', 'danger')
+        return redirect(url_for('login_admin'))
+    if request.method == 'POST':
+        user_id = request.form.get('user_id')
+        cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
+        cursor.execute('DELETE FROM Astronaut WHERE user_id = %s', (user_id,))
+        cursor.execute('DELETE FROM User WHERE user_id = %s', (user_id,))
+        mysql.connection.commit()
+        flash('Astronaut deleted successfully, ID:' + user_id, 'success')
+        return redirect(url_for('managed_astronauts'))
+    if request.method == 'GET':
+        cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
+        cursor.execute('SELECT * FROM Astronaut INNER JOIN User ON User.user_id = Astronaut.user_id INNER JOIN Company ON Astronaut.company_id = Company.user_id')
+        astronauts = cursor.fetchall()
+        return render_template('managed_astronauts.html', astronauts=astronauts)
+
+@app.route('/managed_ships', methods=['GET', 'POST'])
+def managed_ships():
+    if 'admin' not in session:
+        flash('You need to login as an admin to view this page.', 'danger')
+        return redirect(url_for('login_admin'))
+    if request.method == 'POST':
+        spaceship_id = request.form.get('spaceship_id')
+        cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
+        cursor.execute('SET FOREIGN_KEY_CHECKS=0;')
+        cursor.execute('DELETE FROM launch_vehicle WHERE launch_vehicle_id = (SELECT launch_vehicle_id FROM Spaceship WHERE spaceship_id = %s)', (spaceship_id,))
+        cursor.execute('DELETE FROM Spaceship WHERE spaceship_id = %s', (spaceship_id,))
+        cursor.execute('SET FOREIGN_KEY_CHECKS=1;')
+        mysql.connection.commit()
+        flash('Spaceship deleted successfully, ID:' + spaceship_id, 'success')
+        return redirect(url_for('managed_ships'))
+    elif request.method == 'GET':
+        cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
+        cursor.execute('SELECT * FROM Spaceship INNER JOIN launch_vehicle ON Spaceship.launch_vehicle_id = launch_vehicle.launch_vehicle_id INNER JOIN Company ON Spaceship.owner_comp_id = Company.user_id INNER JOIN User ON Company.user_id = User.user_id')
+        ships = cursor.fetchall()
+        return render_template('managed_ships.html', ships=ships)
+
+@app.route('/managed_biddings', methods=['GET', 'POST'])
+def managed_biddings():
+    if 'admin' not in session:
+        flash('You need to login as an admin to view this page.', 'danger')
+        return redirect(url_for('login_admin'))
+    if request.method == 'POST':
+        bid_id = request.form.get('bid_id')
+        cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
+        cursor.execute('DELETE FROM bid WHERE bid_id = %s', (bid_id,))
+        mysql.connection.commit()
+        flash('Bid deleted successfully, ID:' + bid_id, 'success')
+        return redirect(url_for('managed_biddings'))
+    cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
+    cursor.execute('SELECT * FROM bid INNER JOIN space_mission ON bid.mission_id = space_mission.mission_id')
+    bids = cursor.fetchall()
+    return render_template('managed_biddings.html', bids=bids)
+
 
 
 @app.route('/missions', methods=['GET'])
@@ -356,8 +515,15 @@ def handle_bid(bid_id, mission_id):
     flash('Bid accepted, mission updated, and payment processed!', 'success')
     return redirect(url_for('biddings'))
 
-@app.route('/managed_missions')
+@app.route('/managed_missions', methods=['GET', 'POST'])
 def managed_missions():
+    if request.method == 'POST':
+        mission_id = request.form.get('mission_id')
+        cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
+        cursor.execute('DELETE FROM space_mission WHERE mission_id = %s', (mission_id,))
+        mysql.connection.commit()
+        flash('Mission deleted successfully, ID:' + mission_id, 'success')
+        return redirect(url_for('managed_missions'))
     if 'loggedin' not in session:
         return redirect(url_for('login_company'))
 
@@ -372,6 +538,14 @@ def managed_missions():
         LEFT JOIN Spaceship s ON sm.spaceship_id = s.spaceship_id
         WHERE sm.manager_comp_id = %s
     """, (manager_id,))
+    
+    if 'admin' in session: # Admin can view all missions
+        cursor.execute("""
+            SELECT sm.mission_id, sm.mission_name, sm.status, sm.spaceship_id, sm.creator_comp_id, u.name AS creator_company_name, s.spaceship_name AS allocated_spaceship_name
+            FROM space_mission sm
+            JOIN User u ON sm.creator_comp_id = u.user_id
+            LEFT JOIN Spaceship s ON sm.spaceship_id = s.spaceship_id
+        """)
 
     missions = cursor.fetchall()
 
@@ -484,6 +658,12 @@ def logout():
     session.pop('loggedin', None)
     session.pop('userid', None)
     session.pop('username', None)
+    if 'company' in session:
+        session.pop('company', None)
+    if 'astronaut' in session:
+        session.pop('astronaut', None)
+    if 'admin' in session:
+        session.pop('admin', None)
 
     # Inform user.
     flash('You have been logged out.', 'success')
@@ -1029,6 +1209,155 @@ def edit_astronauts(mission_id):
 		return render_template('edit_astronauts.html', mission=mission, astronauts=astronauts, current_participants_ids=current_participants_ids, astronaut_health_status=astronaut_health_status)
 	else:
 		return redirect(url_for('login_company'))
+
+@app.route('/reports')
+def reports():
+    if 'loggedin' not in session or 'admin' not in session:
+        flash('You must be logged in as an admin to view this page.')
+        return redirect(url_for('login_admin'))
+
+    cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
+
+    # Most Expensive Mission
+    cursor.execute("""
+        SELECT mission_name, cost FROM space_mission ORDER BY cost DESC LIMIT 1
+    """)
+    most_expensive_mission = cursor.fetchone()
+
+    # Company with Most Ships (excluding admins)
+    cursor.execute("""
+        SELECT u.name, COUNT(*) AS ship_count
+        FROM Spaceship s
+        JOIN User u ON s.owner_comp_id = u.user_id
+        LEFT JOIN Admin a ON u.user_id = a.user_id
+        WHERE a.user_id IS NULL
+        GROUP BY s.owner_comp_id
+        ORDER BY ship_count DESC LIMIT 1
+    """)
+    company_with_most_ships = cursor.fetchone()
+
+    # Longest Mission
+    cursor.execute("""
+        SELECT mission_name, duration FROM space_mission ORDER BY duration DESC LIMIT 1
+    """)
+    longest_mission = cursor.fetchone()
+
+    # Mission with Most Astronauts
+    cursor.execute("""
+        SELECT m.mission_name, COUNT(p.astronaut_id) AS astronaut_count
+        FROM participates p
+        JOIN space_mission m ON p.mission_id = m.mission_id
+        GROUP BY p.mission_id
+        ORDER BY astronaut_count DESC LIMIT 1
+    """)
+    mission_with_most_astronauts = cursor.fetchone()
+
+    # Most Active Astronaut
+    cursor.execute("""
+        SELECT u.name, COUNT(*) AS missions_participated
+        FROM participates p
+        JOIN User u ON p.astronaut_id = u.user_id
+        GROUP BY p.astronaut_id
+        ORDER BY missions_participated DESC LIMIT 1
+    """)
+    most_active_astronaut = cursor.fetchone()
+
+    # Highest Bidder
+    cursor.execute("""
+        SELECT u.name, MAX(b.bid_amount) AS highest_bid
+        FROM bid b
+        JOIN User u ON b.company_id = u.user_id
+        GROUP BY b.company_id
+        ORDER BY highest_bid DESC LIMIT 1
+    """)
+    highest_bidder = cursor.fetchone()
+
+    # Most Frequent Destination
+    cursor.execute("""
+        SELECT destination, COUNT(*) AS mission_count
+        FROM space_mission
+        GROUP BY destination
+        ORDER BY mission_count DESC LIMIT 1
+    """)
+    most_frequent_destination = cursor.fetchone()
+
+    # Most Used Launch Vehicle
+    cursor.execute("""
+        SELECT l.launch_vehicle_name, COUNT(*) AS usage_count
+        FROM Spaceship s
+        JOIN launch_vehicle l ON s.launch_vehicle_id = l.launch_vehicle_id
+        GROUP BY l.launch_vehicle_id
+        ORDER BY usage_count DESC LIMIT 1
+    """)
+    most_used_launch_vehicle = cursor.fetchone()
+
+   # Company with Highest Total Mission Cost (excluding admins)
+    cursor.execute("""
+        SELECT u.name, SUM(m.cost) AS total_cost
+        FROM space_mission m
+        JOIN User u ON m.creator_comp_id = u.user_id
+        LEFT JOIN Admin a ON u.user_id = a.user_id
+        WHERE a.user_id IS NULL
+        GROUP BY m.creator_comp_id
+        ORDER BY total_cost DESC LIMIT 1
+    """)
+    company_with_highest_total_mission_cost = cursor.fetchone()
+
+    # Most Successful Missions (completed, excluding admins)
+    cursor.execute("""
+        SELECT u.name, COUNT(*) AS completed_missions
+        FROM space_mission m
+        JOIN User u ON m.creator_comp_id = u.user_id
+        LEFT JOIN Admin a ON u.user_id = a.user_id
+        WHERE m.status = 'Completed' AND a.user_id IS NULL
+        GROUP BY m.creator_comp_id
+        ORDER BY completed_missions DESC LIMIT 1
+    """)
+    most_successful_missions = cursor.fetchone()
+
+    cursor.close()
+
+    return render_template('reports.html', 
+        most_expensive_mission=most_expensive_mission,
+        company_with_most_ships=company_with_most_ships,
+        longest_mission=longest_mission,
+        mission_with_most_astronauts=mission_with_most_astronauts,
+        most_active_astronaut=most_active_astronaut,
+        highest_bidder=highest_bidder,
+        most_frequent_destination=most_frequent_destination,
+        most_used_launch_vehicle=most_used_launch_vehicle,
+        company_with_highest_total_mission_cost=company_with_highest_total_mission_cost,
+        most_successful_missions=most_successful_missions
+    )
+@app.route('/mission_bid_summary')
+def mission_bid_summary():
+    if 'loggedin' not in session or 'admin' not in session:
+        flash('You must be logged in as an admin to view this page.')
+        return redirect(url_for('login_admin'))
+
+    cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
+
+    # Fetch data from the simplified MissionSummary view
+    cursor.execute("SELECT * FROM MissionSummary")
+    mission_summary = [{
+        'mission_name': row['mission_name'],
+        'status': row['status'],
+        'launch_date': row['launch_date'],
+        'cost': "{:.2f}".format(row['cost']) if row['cost'] is not None else 'No data'
+    } for row in cursor.fetchall()]
+
+    # Fetch data from the simplified BidSummary view
+    cursor.execute("SELECT * FROM BidSummary")
+    bid_summary = [{
+        'bidder_name': row['bidder_name'],
+        'mission_name': row['mission_name'],
+        'bid_amount': "{:.2f}".format(row['bid_amount']) if row['bid_amount'] is not None else 'No data'
+    } for row in cursor.fetchall()]
+
+    cursor.close()
+
+    return render_template('mission_bid_summary.html', mission_summary=mission_summary, bid_summary=bid_summary)
+
 
 if __name__ == "__main__":
     port = int(os.environ.get('PORT', 5000))
