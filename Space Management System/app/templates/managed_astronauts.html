@@ -22,7 +22,8 @@
                 <ul class="list-group list-group-flush">
                     <li class="list-group-item"><strong>astronaut ID:</strong> {{ astronaut.user_id }}</li>
                 </ul>
-                <form method="delete" action="{{ url_for('managed_astronauts', user_id=astronaut.user_id) }}">
+                <form method="POST" action="{{ url_for('managed_astronauts') }}">
+                    <input type="hidden" name="user_id" value="{{ astronaut.user_id }}">
                     <div class="form-group mt-3">
                         <label for="spaceship">Remove astronaut</label>
                     </div>

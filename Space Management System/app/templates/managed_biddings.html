@@ -20,9 +20,10 @@
             </div>
             <div class="card-body">
                 <ul class="list-group list-group-flush">
-                    <li class="list-group-item"><strong>bidding ID:</strong> {{ bidding.user_id }}</li>
+                    <li class="list-group-item"><strong>bidding ID:</strong> {{ bidding.bid_id }}</li>
                 </ul>
-                <form method="delete" action="{{ url_for('managed_biddings', user_id=bidding.user_id) }}">
+                <form method="POST" action="{{ url_for('managed_biddings') }}">
+                    <input type="hidden" name="bid_id" value="{{ bidding.bid_id }}">
                     <div class="form-group mt-3">
                         <label for="spacebidding">Remove bidding</label>
                     </div>

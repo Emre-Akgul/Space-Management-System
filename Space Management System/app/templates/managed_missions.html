@@ -25,6 +25,7 @@
                     <li class="list-group-item"><strong>Allocated Spaceship ID:</strong> {{ mission.spaceship_id or 'None' }}</li>
                     <li class="list-group-item"><strong>Allocated Spaceship Name:</strong> {{ mission.allocated_spaceship_name or 'None' }}</li>
                 </ul>
+                {% if 'admin' not in session %}
                 <form method="post" action="{{ url_for('allocate_spaceship', mission_id=mission.mission_id) }}">
                     <div class="form-group mt-3">
                         <label for="spaceship">Allocate Spaceship:</label>
@@ -38,6 +39,17 @@
                     </div>
                     <button type="submit" class="btn btn-primary">Allocate</button>
                 </form>
+                {% endif %}
+                {% if 'admin' in session %}
+                <form method="POST" action="{{ url_for('managed_missions') }}">
+                    <input type="hidden" name="mission_id" value="{{ mission.mission_id }}">
+                    <div class="form-group
+                    mt-3">
+                        <label for="spaceship">Remove Mission</label>
+                    </div>
+                    <button type="submit" class="btn btn-primary">Remove</button>
+                </form>
+                {% endif %}
             </div>
         </div>
         {% endfor %}

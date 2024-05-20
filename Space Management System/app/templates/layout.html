@@ -14,9 +14,27 @@
         </button>
         <div class="collapse navbar-collapse" id="navbarNav">
             <ul class="navbar-nav mr-auto">
-                <li class="nav-item">
-                    <a class="nav-link" href="{{ url_for('main_page') }}">Main Page</a>
-                </li>
+                {% if 'loggedin' in session %}
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('main_page') }}">Main Page</a>
+                    </li>
+                        {% if 'admin' not in session %}
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ url_for('astronaut_profile', user_id=session['userid']) }}">My Profile</a>
+                        </li>
+                        {% endif %}
+                    {% if 'company' in session%}
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('biddings') }}">Biddings</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('managed_missions') }}">Managed Missions</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('my_ships') }}">My Ships</a>
+                    </li>
+                    {% endif %}
+                {% endif %}
                 {% if 'loggedin' not in session %}
                 <li class="nav-item">
                     <a class="nav-link" href="{{ url_for('login_company') }}">Login Company</a>

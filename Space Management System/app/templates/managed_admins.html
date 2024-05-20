@@ -16,18 +16,20 @@
         {% for admin in admins %}
         <div class="card mb-3">
             <div class="card-header">
-                admin Name: {{ admin.username }} (Status: {{ admin.permission_level }})
+                Admin Name: {{ admin.username }}
             </div>
             <div class="card-body">
                 <ul class="list-group list-group-flush">
-                    <li class="list-group-item"><strong>admin ID:</strong> {{ admin.user_id }}</li>
-                    <li class="list-group-item"><strong>permission level:</strong> {{ admin.permission_level }}</li>
+                    <li class="list-group-item"><strong>Admin ID:</strong> {{ admin.user_id }}</li>
+                    <li class="list-group-item"><strong>Admin Name:</strong> {{ admin.name }}</li>
+                    <li class="list-group-item"><strong>Permission Level:</strong> {{ admin.permission_level }}</li>
                 </ul>
-                <form method="delete" action="{{ url_for('managed_admins', user_id=admin.user_id) }}">
+                <form method="post" action="{{ url_for('managed_admins') }}">
+                    <input type="hidden" name="user_id" value="{{ admin.user_id }}">
                     <div class="form-group mt-3">
                         <label for="spaceship">Remove Admin</label>
                     </div>
-                    <button type="submit" class="btn btn-primary">Remove</button>
+                    <button type="submit" class="btn btn-primary" {% if admin.permission_level == 'SuperAdmin' %}disabled{% endif %}>Remove</button>
                 </form>
             </div>
         </div>
@@ -37,5 +39,36 @@
             No managed admins available at the moment.
         </div>
     {% endif %}
+
+    <h2>Non-admin Users</h2>
+
+    {% if others %}
+        {% for user in others %}
+        <div class="card mb-3">
+            <div class="card-header">
+                User Name: {{ user.username }}
+            </div>
+            <div class="card-body">
+                <ul class="list-group list-group-flush">
+                    <li class="list-group-item"><strong>User ID:</strong> {{ user.user_id }}</li>
+                    <li class="list-group-item"><strong>User Name:</strong> {{ user.name }}</li>
+                </ul>
+                <form method="post" action="{{ url_for('add_admin') }}">
+                    <input type="hidden" name="user_id" value="{{ user.user_id }}">
+                    <div class="form-group mt-3">
+                        <label for="spaceship">Add Admin</label>
+                    </div>
+                    <button type="submit" class="btn btn-primary">Make Admin</button>
+                </form>
+            </div>
+        </div>
+        {% endfor %}
+    {% else %}
+        <div class="alert alert-info" role="alert">
+            No users available at the moment.
+        </div>
+    {% endif %}
+
+
 </div>
 {% endblock %}

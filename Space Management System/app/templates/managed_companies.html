@@ -16,13 +16,19 @@
         {% for company in companies %}
         <div class="card mb-3">
             <div class="card-header">
-                company Name: {{ company.username }} (Status: {{ company.permission_level }})
+                Company Username: {{ company.username }}
             </div>
             <div class="card-body">
                 <ul class="list-group list-group-flush">
-                    <li class="list-group-item"><strong>company ID:</strong> {{ company.user_id }}</li>
+                    <li class="list-group-item"><strong>Company Name:</strong> {{ company.name }}</li>
+                    <li class="list-group-item"><strong>Company ID:</strong> {{ company.user_id }}</li>
+                    <li class="list-group-item"><strong>Company Email:</strong> {{ company.email }}</li>
+                    <li class="list-group-item"><strong>Company Industry:</strong> {{ company.industry_sector }}</li>
+                    <li class="list-group-item"><strong>Company Location:</strong> {{ company.address }}</li>
+                    <li class="list-group-item"><strong>Company Website:</strong> {{ company.website }}</li>
                 </ul>
-                <form method="delete" action="{{ url_for('managed_companies', user_id=company.user_id) }}">
+                <form method="POST" action="{{ url_for('managed_companies') }}">
+                    <input type="hidden" name="user_id" value="{{ company.user_id }}">
                     <div class="form-group mt-3">
                         <label for="spaceship">Remove company</label>
                     </div>

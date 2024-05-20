@@ -1,5 +1,6 @@
 CREATE DATABASE IF NOT EXISTS spaceapp;
 
+
 USE spaceapp;
 
 CREATE TABLE User (
