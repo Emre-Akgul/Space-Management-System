@@ -353,13 +353,66 @@ Insert into User (username, name, password, email) values ('admin', 'Admin', 'ad
 Insert into Admin (user_id, permission_level) values (29, 'SuperAdmin');
 
 -- Insert a past mission
-INSERT INTO space_mission (mission_id, mission_name, description, status, launch_date, destination, cost, duration, crew_size, required_roles, bid_deadline, creator_comp_id, manager_comp_id, spaceship_id)
+INSERT INTO space_mission (mission_name, description, status, launch_date, destination, cost, duration, crew_size, required_roles, bid_deadline, creator_comp_id, manager_comp_id, spaceship_id)
 VALUES 
-(1, 'Mission Past Alpha', 'Completed exploration mission to Mars.', 'Completed', '2022-07-20', 'Mars', 50000000, 180, 10, 'Commander, Pilot, Mission Specialist, Flight Engineer, Medical Doctor', '2021-06-20', 1, 2, 1);
+('Mission Past Alpha', 'Completed exploration mission to Mars.', 'Completed', '2022-07-20', 'Mars', 50000000, 180, 10, 'Commander, Pilot, Mission Specialist, Flight Engineer, Medical Doctor', '2021-06-20', 1, 2, 1),
+('Mission Past Beta', 'Completed mining mission on the Moon.', 'Completed', '2021-05-10', 'Moon', 30000000, 90, 8, 'Commander, Pilot, Mission Specialist, Flight Engineer', '2020-11-30', 2, 3, 2);
 
--- Assign Astronaut 1 to the past mission
+-- upcoming missions
+INSERT INTO space_mission (mission_name, description, status, launch_date, destination, cost, duration, crew_size, required_roles, bid_deadline, creator_comp_id, manager_comp_id, spaceship_id)
+VALUES 
+('Mission Future Gamma', 'Upcoming research mission to study asteroids.', 'Planned', '2025-01-05', 'Asteroid Belt', 70000000, 270, 12, 'Commander, Pilot, Mission Specialist, Flight Engineer, Medical Doctor', '2024-06-30', 3, 1, 3),
+('Mission Future Delta', 'Upcoming mapping mission to Venus.', 'Planned', '2025-04-10', 'Venus', 60000000, 150, 8, 'Commander, Pilot, Mission Specialist, Flight Engineer', '2024-09-30', 1, 3, 4),
+('Mission Future Epsilon', 'Upcoming tourism mission to the International Space Station.', 'Planned', '2025-07-25', 'ISS', 40000000, 60, 6, 'Commander, Pilot, Mission Specialist, Medical Doctor', '2025-01-31', 2, 1, 5);
+
+-- astronauts to past missions
 INSERT INTO participates (astronaut_id, mission_id) VALUES 
-(4, (SELECT mission_id FROM space_mission WHERE mission_name = 'Mission Past Alpha'));
+(4, (SELECT mission_id FROM space_mission WHERE mission_name = 'Mission Past Alpha')),
+(5, (SELECT mission_id FROM space_mission WHERE mission_name = 'Mission Past Alpha')),
+(6, (SELECT mission_id FROM space_mission WHERE mission_name = 'Mission Past Alpha')),
+(7, (SELECT mission_id FROM space_mission WHERE mission_name = 'Mission Past Alpha')),
+(8, (SELECT mission_id FROM space_mission WHERE mission_name = 'Mission Past Alpha')),
+(9, (SELECT mission_id FROM space_mission WHERE mission_name = 'Mission Past Alpha')),
+(10, (SELECT mission_id FROM space_mission WHERE mission_name = 'Mission Past Alpha')),
+(11, (SELECT mission_id FROM space_mission WHERE mission_name = 'Mission Past Alpha')),
+(12, (SELECT mission_id FROM space_mission WHERE mission_name = 'Mission Past Alpha')),
+(13, (SELECT mission_id FROM space_mission WHERE mission_name = 'Mission Past Alpha')),
+(14, (SELECT mission_id FROM space_mission WHERE mission_name = 'Mission Past Beta')),
+(15, (SELECT mission_id FROM space_mission WHERE mission_name = 'Mission Past Beta')),
+(16, (SELECT mission_id FROM space_mission WHERE mission_name = 'Mission Past Beta')),
+(17, (SELECT mission_id FROM space_mission WHERE mission_name = 'Mission Past Beta')),
+(18, (SELECT mission_id FROM space_mission WHERE mission_name = 'Mission Past Beta')),
+(19, (SELECT mission_id FROM space_mission WHERE mission_name = 'Mission Past Beta')),
+(20, (SELECT mission_id FROM space_mission WHERE mission_name = 'Mission Past Beta')),
+(21, (SELECT mission_id FROM space_mission WHERE mission_name = 'Mission Past Beta'));
+
+-- astronauts to upcoming missions
+INSERT INTO participates (astronaut_id, mission_id) VALUES 
+(4, (SELECT mission_id FROM space_mission WHERE mission_name = 'Mission Future Gamma')),
+(5, (SELECT mission_id FROM space_mission WHERE mission_name = 'Mission Future Gamma')),
+(6, (SELECT mission_id FROM space_mission WHERE mission_name = 'Mission Future Gamma')),
+(7, (SELECT mission_id FROM space_mission WHERE mission_name = 'Mission Future Gamma')),
+(8, (SELECT mission_id FROM space_mission WHERE mission_name = 'Mission Future Gamma')),
+(9, (SELECT mission_id FROM space_mission WHERE mission_name = 'Mission Future Gamma')),
+(10, (SELECT mission_id FROM space_mission WHERE mission_name = 'Mission Future Gamma')),
+(11, (SELECT mission_id FROM space_mission WHERE mission_name = 'Mission Future Gamma')),
+(12, (SELECT mission_id FROM space_mission WHERE mission_name = 'Mission Future Gamma')),
+(13, (SELECT mission_id FROM space_mission WHERE mission_name = 'Mission Future Gamma')),
+(14, (SELECT mission_id FROM space_mission WHERE mission_name = 'Mission Future Delta')),
+(15, (SELECT mission_id FROM space_mission WHERE mission_name = 'Mission Future Delta')),
+(16, (SELECT mission_id FROM space_mission WHERE mission_name = 'Mission Future Delta')),
+(17, (SELECT mission_id FROM space_mission WHERE mission_name = 'Mission Future Delta')),
+(18, (SELECT mission_id FROM space_mission WHERE mission_name = 'Mission Future Delta')),
+(19, (SELECT mission_id FROM space_mission WHERE mission_name = 'Mission Future Delta')),
+(20, (SELECT mission_id FROM space_mission WHERE mission_name = 'Mission Future Delta')),
+(21, (SELECT mission_id FROM space_mission WHERE mission_name = 'Mission Future Delta')),
+(22, (SELECT mission_id FROM space_mission WHERE mission_name = 'Mission Future Epsilon')),
+(23, (SELECT mission_id FROM space_mission WHERE mission_name = 'Mission Future Epsilon')),
+(24, (SELECT mission_id FROM space_mission WHERE mission_name = 'Mission Future Epsilon')),
+(25, (SELECT mission_id FROM space_mission WHERE mission_name = 'Mission Future Epsilon')),
+(26, (SELECT mission_id FROM space_mission WHERE mission_name = 'Mission Future Epsilon')),
+(27, (SELECT mission_id FROM space_mission WHERE mission_name = 'Mission Future Epsilon'));
+
 
 DELIMITER $$
 

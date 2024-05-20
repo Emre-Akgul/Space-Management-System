@@ -109,11 +109,11 @@ def login_astronaut():
         cursor.execute('SELECT User.user_id, User.name, User.password FROM User INNER JOIN Astronaut ON User.user_id = Astronaut.user_id WHERE User.username = %s', (username,))
         
         user = cursor.fetchone()
-        if user and bcrypt.checkpw(password.encode('utf-8'), user['password'].encode('utf-8')):
+        if user and password == user['password']:
             session['loggedin'] = True
-            session['userid'] = user['user_id']
+            session['userid'] = user['user_id'] 
             session['username'] = user['name']
-            session['astronaut'] = True
+            session['company'] = True
             return redirect(url_for('main_page'))
         else:
             flash('Incorrect username/password!', 'danger')
