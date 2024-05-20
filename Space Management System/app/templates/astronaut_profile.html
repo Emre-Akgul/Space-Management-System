@@ -56,6 +56,7 @@
                 <th>Duration</th>
                 <th>Crew Size</th>
                 <th>Required Roles</th>
+                <th>Feedback</th>
             </tr>
         </thead>
         <tbody>
@@ -70,10 +71,17 @@
                 <td>{{ mission.duration }}</td>
                 <td>{{ mission.crew_size }}</td>
                 <td>{{ mission.required_roles }}</td>
+                <td>
+                    <a href="{{ url_for('view_feedback', mission_id=mission.mission_id) }}" class="btn btn-secondary">View Feedback</a>
+                    {% if is_own_profile %}
+                        <a href="{{ url_for('add_feedback', mission_id=mission.mission_id) }}" class="btn btn-secondary">Add Feedback</a>
+                    {% endif %}
+                </td>
             </tr>
             {% endfor %}
         </tbody>
     </table>
+
 
     <h2>Upcoming Missions</h2>
     <table class="table table-bordered">

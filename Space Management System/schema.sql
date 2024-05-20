@@ -258,3 +258,57 @@ INSERT INTO owns (company_id, spaceship_id) VALUES
 (3, 3),  -- Company C owns Spaceship Gamma
 (1, 4),  -- Company A owns Spaceship Delta
 (2, 5);  -- Company B owns Spaceship Epsilon
+
+-- Insert users for astronauts
+INSERT INTO User (user_id, username, name, password, email) VALUES (4, 'astronaut1', 'Astronaut One', 'pass1', 'astronaut1@example.com');
+INSERT INTO User (user_id, username, name, password, email) VALUES (5, 'astronaut2', 'Astronaut Two', 'pass2', 'astronaut2@example.com');
+INSERT INTO User (user_id, username, name, password, email) VALUES (6, 'astronaut3', 'Astronaut Three', 'pass3', 'astronaut3@example.com');
+INSERT INTO User (user_id, username, name, password, email) VALUES (7, 'astronaut4', 'Astronaut Four', 'pass4', 'astronaut4@example.com');
+INSERT INTO User (user_id, username, name, password, email) VALUES (8, 'astronaut5', 'Astronaut Five', 'pass5', 'astronaut5@example.com');
+INSERT INTO User (user_id, username, name, password, email) VALUES (9, 'astronaut6', 'Astronaut Six', 'pass6', 'astronaut6@example.com');
+INSERT INTO User (user_id, username, name, password, email) VALUES (10, 'astronaut7', 'Astronaut Seven', 'pass7', 'astronaut7@example.com');
+INSERT INTO User (user_id, username, name, password, email) VALUES (11, 'astronaut8', 'Astronaut Eight', 'pass8', 'astronaut8@example.com');
+INSERT INTO User (user_id, username, name, password, email) VALUES (12, 'astronaut9', 'Astronaut Nine', 'pass9', 'astronaut9@example.com');
+INSERT INTO User (user_id, username, name, password, email) VALUES (13, 'astronaut10', 'Astronaut Ten', 'pass10', 'astronaut10@example.com');
+INSERT INTO User (user_id, username, name, password, email) VALUES (14, 'astronaut11', 'Astronaut Eleven', 'pass11', 'astronaut11@example.com');
+INSERT INTO User (user_id, username, name, password, email) VALUES (15, 'astronaut12', 'Astronaut Twelve', 'pass12', 'astronaut12@example.com');
+INSERT INTO User (user_id, username, name, password, email) VALUES (16, 'astronaut13', 'Astronaut Thirteen', 'pass13', 'astronaut13@example.com');
+INSERT INTO User (user_id, username, name, password, email) VALUES (17, 'astronaut14', 'Astronaut Fourteen', 'pass14', 'astronaut14@example.com');
+INSERT INTO User (user_id, username, name, password, email) VALUES (18, 'astronaut15', 'Astronaut Fifteen', 'pass15', 'astronaut15@example.com');
+INSERT INTO User (user_id, username, name, password, email) VALUES (19, 'astronaut16', 'Astronaut Sixteen', 'pass16', 'astronaut16@example.com');
+INSERT INTO User (user_id, username, name, password, email) VALUES (20, 'astronaut17', 'Astronaut Seventeen', 'pass17', 'astronaut17@example.com');
+INSERT INTO User (user_id, username, name, password, email) VALUES (21, 'astronaut18', 'Astronaut Eighteen', 'pass18', 'astronaut18@example.com');
+INSERT INTO User (user_id, username, name, password, email) VALUES (22, 'astronaut19', 'Astronaut Nineteen', 'pass19', 'astronaut19@example.com');
+INSERT INTO User (user_id, username, name, password, email) VALUES (23, 'astronaut20', 'Astronaut Twenty', 'pass20', 'astronaut20@example.com');
+INSERT INTO User (user_id, username, name, password, email) VALUES (24, 'astronaut21', 'Astronaut Twenty-One', 'pass21', 'astronaut21@example.com');
+INSERT INTO User (user_id, username, name, password, email) VALUES (25, 'astronaut22', 'Astronaut Twenty-Two', 'pass22', 'astronaut22@example.com');
+INSERT INTO User (user_id, username, name, password, email) VALUES (26, 'astronaut23', 'Astronaut Twenty-Three', 'pass23', 'astronaut23@example.com');
+INSERT INTO User (user_id, username, name, password, email) VALUES (27, 'astronaut24', 'Astronaut Twenty-Four', 'pass24', 'astronaut24@example.com');
+INSERT INTO User (user_id, username, name, password, email) VALUES (28, 'astronaut25', 'Astronaut Twenty-Five', 'pass25', 'astronaut25@example.com');
+
+-- Insert astronauts infos
+INSERT INTO Astronaut (user_id, company_id, date_of_birth, nationality, experience_level, role_id) VALUES (4, 1, '2000-01-01', 'TUR', 'Beginner', 1);
+INSERT INTO Astronaut (user_id, company_id, date_of_birth, nationality, experience_level, role_id) VALUES (5, 2, '1985-05-20', 'TUR', 'Intermediate', 2);
+INSERT INTO Astronaut (user_id, company_id, date_of_birth, nationality, experience_level, role_id) VALUES (6, 3, '1990-07-15', 'CAN', 'Expert', 3);
+INSERT INTO Astronaut (user_id, company_id, date_of_birth, nationality, experience_level, role_id) VALUES (7, 4, '1978-11-11', 'IND', 'Advanced', 4);
+INSERT INTO Astronaut (user_id, company_id, date_of_birth, nationality, experience_level, role_id) VALUES (8, 5, '1988-02-28', 'TUR', 'Intermediate', 5);
+INSERT INTO Astronaut (user_id, company_id, date_of_birth, nationality, experience_level, role_id) VALUES (9, 1, '1977-03-14', 'USA', 'Beginner', 1);
+INSERT INTO Astronaut (user_id, company_id, date_of_birth, nationality, experience_level, role_id) VALUES (10, 2, '1992-06-21', 'TUR', 'Expert', 2);
+INSERT INTO Astronaut (user_id, company_id, date_of_birth, nationality, experience_level, role_id) VALUES (11, 3, '1980-08-19', 'TUR', 'Advanced', 3);
+INSERT INTO Astronaut (user_id, company_id, date_of_birth, nationality, experience_level, role_id) VALUES (12, 4, '1985-12-11', 'IND', 'Intermediate', 4);
+INSERT INTO Astronaut (user_id, company_id, date_of_birth, nationality, experience_level, role_id) VALUES (13, 5, '1993-05-15', 'TUR', 'Beginner', 5);
+INSERT INTO Astronaut (user_id, company_id, date_of_birth, nationality, experience_level, role_id) VALUES (14, 1, '1982-07-22', 'USA', 'Expert', 1);
+INSERT INTO Astronaut (user_id, company_id, date_of_birth, nationality, experience_level, role_id) VALUES (15, 2, '1990-01-01', 'TUR', 'Advanced', 2);
+INSERT INTO Astronaut (user_id, company_id, date_of_birth, nationality, experience_level, role_id) VALUES (16, 3, '1989-09-09', 'CAN', 'Intermediate', 3);
+INSERT INTO Astronaut (user_id, company_id, date_of_birth, nationality, experience_level, role_id) VALUES (17, 4, '1981-10-23', 'IND', 'Beginner', 4);
+INSERT INTO Astronaut (user_id, company_id, date_of_birth, nationality, experience_level, role_id) VALUES (18, 5, '1995-04-18', 'TUR', 'Expert', 5);
+INSERT INTO Astronaut (user_id, company_id, date_of_birth, nationality, experience_level, role_id) VALUES (19, 1, '1979-11-29', 'USA', 'Advanced', 1);
+INSERT INTO Astronaut (user_id, company_id, date_of_birth, nationality, experience_level, role_id) VALUES (20, 2, '1994-02-14', 'TUR', 'Intermediate', 2);
+INSERT INTO Astronaut (user_id, company_id, date_of_birth, nationality, experience_level, role_id) VALUES (21, 3, '1983-03-17', 'CAN', 'Beginner', 3);
+INSERT INTO Astronaut (user_id, company_id, date_of_birth, nationality, experience_level, role_id) VALUES (22, 4, '1987-06-11', 'IND', 'Expert', 4);
+INSERT INTO Astronaut (user_id, company_id, date_of_birth, nationality, experience_level, role_id) VALUES (23, 5, '1991-08-19', 'CHN', 'Advanced', 5);
+INSERT INTO Astronaut (user_id, company_id, date_of_birth, nationality, experience_level, role_id) VALUES (24, 1, '1984-10-30', 'USA', 'Intermediate', 1);
+INSERT INTO Astronaut (user_id, company_id, date_of_birth, nationality, experience_level, role_id) VALUES (25, 2, '1990-12-12', 'TUR', 'Beginner', 2);
+INSERT INTO Astronaut (user_id, company_id, date_of_birth, nationality, experience_level, role_id) VALUES (26, 3, '1986-11-21', 'CAN', 'Expert', 3);
+INSERT INTO Astronaut (user_id, company_id, date_of_birth, nationality, experience_level, role_id) VALUES (27, 4, '1993-09-09', 'IND', 'Advanced', 4);
+INSERT INTO Astronaut (user_id, company_id, date_of_birth, nationality, experience_level, role_id) VALUES (28, 5, '1988-03-15', 'TUR', 'Intermediate', 5);

@@ -91,7 +91,6 @@ def register_company():
 
     return render_template('register_company.html', message=message)
 
-
 @app.route('/login_astronaut', methods=['GET', 'POST'])
 def login_astronaut():
     if request.method == 'POST':
@@ -109,9 +108,9 @@ def login_astronaut():
         cursor.execute('SELECT User.user_id, User.name, User.password FROM User INNER JOIN Astronaut ON User.user_id = Astronaut.user_id WHERE User.username = %s', (username,))
         
         user = cursor.fetchone()
-        if user and bcrypt.checkpw(password.encode('utf-8'), user['password'].encode('utf-8')):
+        if user and password == user['password']:
             session['loggedin'] = True
-            session['userid'] = user['user_id'] 
+            session['userid'] = user['user_id']
             session['username'] = user['name']
             return redirect(url_for('main_page'))
         else:
@@ -119,6 +118,7 @@ def login_astronaut():
 
     # If unsuccessful then remain in login
     return render_template('login_astronaut.html')
+
 
 
 @app.route('/register_astronaut', methods=['GET', 'POST'])
@@ -759,6 +759,41 @@ def astronaut_profile(user_id):
                            health_records=health_records, training_records=training_records,
                            available_training_programs=available_training_programs,
                            is_own_profile=is_own_profile)
+
+@app.route('/add_feedback/<int:mission_id>', methods=['GET', 'POST'])
+def add_feedback(mission_id):
+    if request.method == 'POST':
+        content = request.form['content']
+        user_id = session.get('userid')
+        
+        if not content:
+            flash('Please provide feedback content.', 'danger')
+        else:
+            cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
+            cursor.execute('''
+                INSERT INTO mission_feedback (date_submitted, content, mission_id, feedback_giver)
+                VALUES (%s, %s, %s, %s)
+            ''', (datetime.now().date(), content, mission_id, user_id))
+            mysql.connection.commit()
+            flash('Feedback submitted successfully!', 'success')
+            return redirect(url_for('view_feedback', mission_id=mission_id))
+    
+    return render_template('add_feedback.html', mission_id=mission_id)
+
+@app.route('/view_feedback/<int:mission_id>')
+def view_feedback(mission_id):
+    cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
+    
+    cursor.execute('''
+        SELECT feedback_id, date_submitted, content, User.username AS feedback_giver
+        FROM mission_feedback
+        JOIN User ON mission_feedback.feedback_giver = User.user_id
+        WHERE mission_id = %s
+        ORDER BY date_submitted DESC
+    ''', (mission_id,))
+    feedbacks = cursor.fetchall()
+    
+    return render_template('view_feedback.html', feedbacks=feedbacks, mission_id=mission_id)
 
 @app.route('/apply_training/<int:user_id>', methods=['GET', 'POST'])
 def apply_training(user_id):
