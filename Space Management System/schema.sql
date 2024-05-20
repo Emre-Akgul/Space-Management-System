@@ -355,15 +355,15 @@ Insert into Admin (user_id, permission_level) values (29, 'SuperAdmin');
 -- Insert a past mission
 INSERT INTO space_mission (mission_name, description, status, launch_date, destination, cost, duration, crew_size, required_roles, bid_deadline, creator_comp_id, manager_comp_id, spaceship_id)
 VALUES 
-('Mission Past Alpha', 'Completed exploration mission to Mars.', 'Completed', '2022-07-20', 'Mars', 50000000, 180, 10, 'Commander, Pilot, Mission Specialist, Flight Engineer, Medical Doctor', '2021-06-20', 1, 2, 1),
-('Mission Past Beta', 'Completed mining mission on the Moon.', 'Completed', '2021-05-10', 'Moon', 30000000, 90, 8, 'Commander, Pilot, Mission Specialist, Flight Engineer', '2020-11-30', 2, 3, 2);
+('Mission Past Alpha', 'Exploration mission to Mars.', 'Completed', '2022-07-20', 'Mars', 50000000, 180, 10, 'Commander, Pilot, Mission Specialist, Flight Engineer, Medical Doctor', '2021-06-20', 1, 2, 1),
+('Mission Past Beta', 'Mining mission on the Moon.', 'Completed', '2021-05-10', 'Moon', 30000000, 90, 8, 'Commander, Pilot, Mission Specialist, Flight Engineer', '2020-11-30', 2, 3, 2);
 
 -- upcoming missions
 INSERT INTO space_mission (mission_name, description, status, launch_date, destination, cost, duration, crew_size, required_roles, bid_deadline, creator_comp_id, manager_comp_id, spaceship_id)
 VALUES 
-('Mission Future Gamma', 'Upcoming research mission to study asteroids.', 'Planned', '2025-01-05', 'Asteroid Belt', 70000000, 270, 12, 'Commander, Pilot, Mission Specialist, Flight Engineer, Medical Doctor', '2024-06-30', 3, 1, 3),
-('Mission Future Delta', 'Upcoming mapping mission to Venus.', 'Planned', '2025-04-10', 'Venus', 60000000, 150, 8, 'Commander, Pilot, Mission Specialist, Flight Engineer', '2024-09-30', 1, 3, 4),
-('Mission Future Epsilon', 'Upcoming tourism mission to the International Space Station.', 'Planned', '2025-07-25', 'ISS', 40000000, 60, 6, 'Commander, Pilot, Mission Specialist, Medical Doctor', '2025-01-31', 2, 1, 5);
+('Mission Future Gamma', 'Research mission to study asteroids.', 'Planned', '2025-01-05', 'Asteroid Belt', 70000000, 270, 12, 'Commander, Pilot, Mission Specialist, Flight Engineer, Medical Doctor', '2024-06-30', 3, 1, 3),
+('Mission Future Delta', 'Mapping mission to Venus.', 'Planned', '2025-04-10', 'Venus', 60000000, 150, 8, 'Commander, Pilot, Mission Specialist, Flight Engineer', '2024-09-30', 1, 3, 4),
+('Mission Future Epsilon', 'Tourism mission to the International Space Station.', 'Bidding', '2025-07-25', 'ISS', 40000000, 60, 6, 'Commander, Pilot, Mission Specialist, Medical Doctor', '2025-01-31', 2, 1, 5);
 
 -- astronauts to past missions
 INSERT INTO participates (astronaut_id, mission_id) VALUES 

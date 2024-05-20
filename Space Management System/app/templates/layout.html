@@ -18,7 +18,7 @@
                     <li class="nav-item">
                         <a class="nav-link" href="{{ url_for('main_page') }}">Main Page</a>
                     </li>
-                        {% if 'admin' not in session %}
+                        {% if 'astronaut' in session %}
                         <li class="nav-item">
                             <a class="nav-link" href="{{ url_for('astronaut_profile', user_id=session['userid']) }}">My Profile</a>
                         </li>

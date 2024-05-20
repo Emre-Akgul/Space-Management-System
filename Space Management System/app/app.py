@@ -113,7 +113,7 @@ def login_astronaut():
             session['loggedin'] = True
             session['userid'] = user['user_id'] 
             session['username'] = user['name']
-            session['company'] = True
+            session['astronaut'] = True
             return redirect(url_for('main_page'))
         else:
             flash('Incorrect username/password!', 'danger')
@@ -645,7 +645,7 @@ def add_ship():
 @app.route('/main')
 def main_page():
     if 'loggedin' in session:
-        cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
+        
 
         return render_template('main.html', username=session['username']) 
 
