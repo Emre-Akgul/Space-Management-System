@@ -1,0 +1,26 @@
+{% extends "layout.html" %}
+
+{% block content %}
+<div class="container mt-5">
+    <h1>Mission Feedback</h1>
+
+    <table class="table table-bordered">
+        <thead>
+            <tr>
+                <th>Date Submitted</th>
+                <th>Feedback Content</th>
+                <th>Feedback Giver</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for feedback in feedbacks %}
+            <tr>
+                <td>{{ feedback.date_submitted }}</td>
+                <td>{{ feedback.content }}</td>
+                <td>{{ feedback.feedback_giver }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

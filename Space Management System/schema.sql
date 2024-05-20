@@ -100,8 +100,7 @@ CREATE TABLE Admin (
 	FOREIGN KEY (user_id) REFERENCES User(user_id)
 );
 
-Insert into User (username, name, password, email) values ('admin', 'Admin', 'admin', 'admin@admin.com');
-Insert into Admin (user_id, permission_level) values (1, 'SuperAdmin');
+
 
 CREATE TABLE Company (
 	user_id INT PRIMARY KEY,
@@ -162,8 +161,31 @@ CREATE TABLE Training_program (
     name VARCHAR(256),
     description VARCHAR(4096),
     required_for INT,
+    difficulty ENUM('Essential', 'Intermediate', 'Advanced'),
     FOREIGN KEY (required_for) REFERENCES Role(role_id)
 );
+
+INSERT INTO Training_program (name, description, required_for, difficulty) VALUES 
+('Commander Essential Training', 'This is the essential training program for the commander role.', (SELECT role_id FROM Role WHERE role_name = 'Commander'), 'Essential'),
+('Commander Intermediate Training', 'This is the intermediate training program for the commander role.', (SELECT role_id FROM Role WHERE role_name = 'Commander'), 'Intermediate'),
+('Commander Advanced Training', 'This is the advanced training program for the commander role.', (SELECT role_id FROM Role WHERE role_name = 'Commander'), 'Advanced'),
+('Pilot Essential Training', 'This is the essential training program for the pilot role.', (SELECT role_id FROM Role WHERE role_name = 'Pilot'), 'Essential'),
+('Pilot Intermediate Training', 'This is the intermediate training program for the pilot role.', (SELECT role_id FROM Role WHERE role_name = 'Pilot'), 'Intermediate'),
+('Pilot Advanced Training', 'This is the advanced training program for the pilot role.', (SELECT role_id FROM Role WHERE role_name = 'Pilot'), 'Advanced'),
+('Mission Specialist Essential Training', 'This is the essential training program for the mission specialist role.', (SELECT role_id FROM Role WHERE role_name = 'Mission Specialist'), 'Essential'),
+('Mission Specialist Intermediate Training', 'This is the intermediate training program for the mission specialist role.', (SELECT role_id FROM Role WHERE role_name = 'Mission Specialist'), 'Intermediate'),
+('Mission Specialist Advanced Training', 'This is the advanced training program for the mission specialist role.', (SELECT role_id FROM Role WHERE role_name = 'Mission Specialist'), 'Advanced'),
+('Flight Engineer Essential Training', 'This is the essential training program for the flight engineer role.', (SELECT role_id FROM Role WHERE role_name = 'Flight Engineer'), 'Essential'),
+('Flight Engineer Intermediate Training', 'This is the intermediate training program for the flight engineer role.', (SELECT role_id FROM Role WHERE role_name = 'Flight Engineer'), 'Intermediate'),
+('Flight Engineer Advanced Training', 'This is the advanced training program for the flight engineer role.', (SELECT role_id FROM Role WHERE role_name = 'Flight Engineer'), 'Advanced'),
+('Medical Doctor Essential Training', 'This is the essential training program for the medical doctor role.', (SELECT role_id FROM Role WHERE role_name = 'Medical Doctor'), 'Essential'),
+('Medical Doctor Intermediate Training', 'This is the intermediate training program for the medical doctor role.', (SELECT role_id FROM Role WHERE role_name = 'Medical Doctor'), 'Intermediate'),
+('Medical Doctor Advanced Training', 'This is the advanced training program for the medical doctor role.', (SELECT role_id FROM Role WHERE role_name = 'Medical Doctor'), 'Advanced'),
+('Space Agriculture Training', 'This advanced training program covers the techniques for growing food in space environments.', (SELECT role_id FROM Role WHERE role_name = 'Not assigned'), 'Advanced'),
+('Spacecraft Maintenance Training', 'This advanced training program covers the maintenance procedures and troubleshooting of spacecraft systems.', (SELECT role_id FROM Role WHERE role_name = 'Not assigned'), 'Advanced'),
+('Robotics Training', 'This advanced training program focuses on the operation and maintenance of robotic systems used in space missions.', (SELECT role_id FROM Role WHERE role_name = 'Not assigned'), 'Advanced'),
+('Space Research Training', 'This advanced training program covers the methodologies and practices for conducting research in space.', (SELECT role_id FROM Role WHERE role_name = 'Not assigned'), 'Advanced'),
+('Space Engineering Training', 'This advanced training program covers the engineering principles and technologies used in space missions.', (SELECT role_id FROM Role WHERE role_name = 'Not assigned'), 'Advanced');
 
 CREATE TABLE astronaut_training (
     astronaut_id INT,
@@ -173,23 +195,6 @@ CREATE TABLE astronaut_training (
     FOREIGN KEY (program_id) REFERENCES Training_program(program_id),
     PRIMARY KEY (astronaut_id, program_id)
 );
-
-INSERT INTO Training_program (name, description, required_for) VALUES 
-('Commander Essential Training', 'This is the essential training program for the commander role.', (SELECT role_id FROM Role WHERE role_name = 'Commander')),
-('Commander Intermediate Training', 'This is the intermediate training program for the commander role.', (SELECT role_id FROM Role WHERE role_name = 'Commander')),
-('Commander Advanced Training', 'This is the advanced training program for the commander role.', (SELECT role_id FROM Role WHERE role_name = 'Commander')),
-('Pilot Essential Training', 'This is the essential training program for the pilot role.', (SELECT role_id FROM Role WHERE role_name = 'Pilot')),
-('Pilot Intermediate Training', 'This is the intermediate training program for the pilot role.', (SELECT role_id FROM Role WHERE role_name = 'Pilot')),
-('Pilot Advanced Training', 'This is the advanced training program for the pilot role.', (SELECT role_id FROM Role WHERE role_name = 'Pilot')),
-('Mission Specialist Essential Training', 'This is the essential training program for the mission specialist role.', (SELECT role_id FROM Role WHERE role_name = 'Mission Specialist')),
-('Mission Specialist Intermediate Training', 'This is the intermediate training program for the mission specialist role.', (SELECT role_id FROM Role WHERE role_name = 'Mission Specialist')),
-('Mission Specialist Advanced Training', 'This is the advanced training program for the mission specialist role.', (SELECT role_id FROM Role WHERE role_name = 'Mission Specialist')),
-('Flight Engineer Essential Training', 'This is the essential training program for the flight engineer role.', (SELECT role_id FROM Role WHERE role_name = 'Flight Engineer')),
-('Flight Engineer Intermediate Training', 'This is the intermediate training program for the flight engineer role.', (SELECT role_id FROM Role WHERE role_name = 'Flight Engineer')),
-('Flight Engineer Advanced Training', 'This is the advanced training program for the flight engineer role.', (SELECT role_id FROM Role WHERE role_name = 'Flight Engineer')),
-('Medical Doctor Essential Training', 'This is the essential training program for the medical doctor role.', (SELECT role_id FROM Role WHERE role_name = 'Medical Doctor')),
-('Medical Doctor Intermediate Training', 'This is the intermediate training program for the medical doctor role.', (SELECT role_id FROM Role WHERE role_name = 'Medical Doctor')),
-('Medical Doctor Advanced Training', 'This is the advanced training program for the medical doctor role.', (SELECT role_id FROM Role WHERE role_name = 'Medical Doctor'));
 
 CREATE TABLE Health_record (
     record_id INT AUTO_INCREMENT PRIMARY KEY,
@@ -213,95 +218,121 @@ CREATE TABLE mission_feedback (
 );
 ALTER TABLE Spaceship CONVERT TO CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
+CREATE TABLE owns (
+    company_id INT,
+    spaceship_id INT,
+    PRIMARY KEY (company_id, spaceship_id),
+    FOREIGN KEY (company_id) REFERENCES Company(user_id),
+    FOREIGN KEY (spaceship_id) REFERENCES Spaceship(spaceship_id)
+);
 
-CREATE VIEW MissionSummary AS
-SELECT 
-    mission_id,
-    mission_name, 
-    status, 
-    launch_date, 
-    cost
-FROM 
-    space_mission;
+CREATE TABLE uses (
+    spaceship_id INT,
+    space_mission_id INT,
+    PRIMARY KEY (spaceship_id, space_mission_id),
+    FOREIGN KEY (spaceship_id) REFERENCES Spaceship(spaceship_id),
+    FOREIGN KEY (space_mission_id) REFERENCES space_mission(mission_id)
+);
 
+INSERT INTO User (user_id, username, name, password, email) VALUES 
+(1, 'companyA', 'Company A', 'pass1', 'companya@example.com'), 
+(2, 'companyB', 'Company B', 'pass2', 'companyb@example.com'), 
+(3, 'companyC', 'Company C', 'pass3', 'companyc@example.com');
 
-CREATE VIEW BidSummary AS
-SELECT 
-    b.bid_id,
-    b.bid_amount, 
-    u.name AS bidder_name,
-    m.mission_name
-FROM 
-    bid b
-JOIN 
-    User u ON b.company_id = u.user_id
-JOIN 
-    space_mission m ON b.mission_id = m.mission_id;
+-- Insert corresponding entries into the Company table
+INSERT INTO Company (user_id, address, industry_sector, website) VALUES 
+(1, '123 Space Way', 'Aerospace', 'https://companyA.com'), 
+(2, '456 Galaxy Road', 'Aerospace', 'https://companyB.com'), 
+(3, '789 Star Blvd', 'Aerospace', 'https://companyC.com');
 
+-- Inserting sample data into launch_vehicle table 
+INSERT INTO launch_vehicle (launch_vehicle_name, model, status, launch_site) 
+VALUES 
+('Falcon 9', 'Block 5', 'Operational', 'Cape Canaveral'), 
+('Delta IV Heavy', 'Heavy', 'Operational', 'Vandenberg'), 
+('Atlas V', '401', 'Operational', 'Cape Canaveral'), 
+('Starship', 'Mk1', 'Testing', 'Boca Chica'), 
+('New Glenn', 'Rocket', 'In Development', 'Cape Canaveral'); 
+ 
+-- Inserting sample data into Spaceship table 
+INSERT INTO Spaceship (spaceship_name, type, status, capacity, owner_comp_id, launch_vehicle_id) 
+VALUES 
+('Spaceship Alpha', 'Exploration', 'Active', 10, 1, 1), 
+('Spaceship Beta', 'Mining', 'Active', 15, 2, 2), 
+('Spaceship Gamma', 'Research', 'Active', 20, 3, 3), 
+('Spaceship Delta', 'Mapping', 'Active', 8, 1, 4), 
+('Spaceship Epsilon', 'Tourism', 'Active', 5, 2, 5); 
 
+INSERT INTO owns (company_id, spaceship_id) VALUES 
+(1, 1),  -- Company A owns Spaceship Alpha
+(2, 2),  -- Company B owns Spaceship Beta
+(3, 3),  -- Company C owns Spaceship Gamma
+(1, 4),  -- Company A owns Spaceship Delta
+(2, 5);  -- Company B owns Spaceship Epsilon
 
--- Inserting sample data into User table
-INSERT INTO User (username, name, password, email)
-VALUES
-('companyA', 'Company A', '123', 'companya@example.com'),
-('companyB', 'Company B', '123', 'companyb@example.com'),
-('companyC', 'Company C', '123', 'companyc@example.com');
+-- Insert users for astronauts
+INSERT INTO User (user_id, username, name, password, email) VALUES (4, 'astronaut1', 'Astronaut One', 'pass1', 'astronaut1@example.com');
+INSERT INTO User (user_id, username, name, password, email) VALUES (5, 'astronaut2', 'Astronaut Two', 'pass2', 'astronaut2@example.com');
+INSERT INTO User (user_id, username, name, password, email) VALUES (6, 'astronaut3', 'Astronaut Three', 'pass3', 'astronaut3@example.com');
+INSERT INTO User (user_id, username, name, password, email) VALUES (7, 'astronaut4', 'Astronaut Four', 'pass4', 'astronaut4@example.com');
+INSERT INTO User (user_id, username, name, password, email) VALUES (8, 'astronaut5', 'Astronaut Five', 'pass5', 'astronaut5@example.com');
+INSERT INTO User (user_id, username, name, password, email) VALUES (9, 'astronaut6', 'Astronaut Six', 'pass6', 'astronaut6@example.com');
+INSERT INTO User (user_id, username, name, password, email) VALUES (10, 'astronaut7', 'Astronaut Seven', 'pass7', 'astronaut7@example.com');
+INSERT INTO User (user_id, username, name, password, email) VALUES (11, 'astronaut8', 'Astronaut Eight', 'pass8', 'astronaut8@example.com');
+INSERT INTO User (user_id, username, name, password, email) VALUES (12, 'astronaut9', 'Astronaut Nine', 'pass9', 'astronaut9@example.com');
+INSERT INTO User (user_id, username, name, password, email) VALUES (13, 'astronaut10', 'Astronaut Ten', 'pass10', 'astronaut10@example.com');
+INSERT INTO User (user_id, username, name, password, email) VALUES (14, 'astronaut11', 'Astronaut Eleven', 'pass11', 'astronaut11@example.com');
+INSERT INTO User (user_id, username, name, password, email) VALUES (15, 'astronaut12', 'Astronaut Twelve', 'pass12', 'astronaut12@example.com');
+INSERT INTO User (user_id, username, name, password, email) VALUES (16, 'astronaut13', 'Astronaut Thirteen', 'pass13', 'astronaut13@example.com');
+INSERT INTO User (user_id, username, name, password, email) VALUES (17, 'astronaut14', 'Astronaut Fourteen', 'pass14', 'astronaut14@example.com');
+INSERT INTO User (user_id, username, name, password, email) VALUES (18, 'astronaut15', 'Astronaut Fifteen', 'pass15', 'astronaut15@example.com');
+INSERT INTO User (user_id, username, name, password, email) VALUES (19, 'astronaut16', 'Astronaut Sixteen', 'pass16', 'astronaut16@example.com');
+INSERT INTO User (user_id, username, name, password, email) VALUES (20, 'astronaut17', 'Astronaut Seventeen', 'pass17', 'astronaut17@example.com');
+INSERT INTO User (user_id, username, name, password, email) VALUES (21, 'astronaut18', 'Astronaut Eighteen', 'pass18', 'astronaut18@example.com');
+INSERT INTO User (user_id, username, name, password, email) VALUES (22, 'astronaut19', 'Astronaut Nineteen', 'pass19', 'astronaut19@example.com');
+INSERT INTO User (user_id, username, name, password, email) VALUES (23, 'astronaut20', 'Astronaut Twenty', 'pass20', 'astronaut20@example.com');
+INSERT INTO User (user_id, username, name, password, email) VALUES (24, 'astronaut21', 'Astronaut Twenty-One', 'pass21', 'astronaut21@example.com');
+INSERT INTO User (user_id, username, name, password, email) VALUES (25, 'astronaut22', 'Astronaut Twenty-Two', 'pass22', 'astronaut22@example.com');
+INSERT INTO User (user_id, username, name, password, email) VALUES (26, 'astronaut23', 'Astronaut Twenty-Three', 'pass23', 'astronaut23@example.com');
+INSERT INTO User (user_id, username, name, password, email) VALUES (27, 'astronaut24', 'Astronaut Twenty-Four', 'pass24', 'astronaut24@example.com');
+INSERT INTO User (user_id, username, name, password, email) VALUES (28, 'astronaut25', 'Astronaut Twenty-Five', 'pass25', 'astronaut25@example.com');
 
--- Inserting corresponding data into Company table
-INSERT INTO Company (user_id, address, industry_sector, website)
-VALUES
-(2, '123 Space St, City A', 'Aerospace', 'www.companya.com'),
-(3, '456 Orbit Ave, City B', 'Mining', 'www.companyb.com'),
-(4, '789 Galaxy Blvd, City C', 'Research', 'www.companyc.com');
+-- Insert astronauts infos
+INSERT INTO Astronaut (user_id, company_id, date_of_birth, nationality, experience_level, role_id) VALUES (4, 1, '2000-01-01', 'TUR', 'Beginner', 1);
+INSERT INTO Astronaut (user_id, company_id, date_of_birth, nationality, experience_level, role_id) VALUES (5, 2, '1985-05-20', 'TUR', 'Intermediate', 2);
+INSERT INTO Astronaut (user_id, company_id, date_of_birth, nationality, experience_level, role_id) VALUES (6, 3, '1990-07-15', 'CAN', 'Expert', 3);
+INSERT INTO Astronaut (user_id, company_id, date_of_birth, nationality, experience_level, role_id) VALUES (7, 1, '1978-11-11', 'IND', 'Advanced', 4);
+INSERT INTO Astronaut (user_id, company_id, date_of_birth, nationality, experience_level, role_id) VALUES (8, 2, '1988-02-28', 'TUR', 'Intermediate', 5);
+INSERT INTO Astronaut (user_id, company_id, date_of_birth, nationality, experience_level, role_id) VALUES (9, 1, '1977-03-14', 'USA', 'Beginner', 1);
+INSERT INTO Astronaut (user_id, company_id, date_of_birth, nationality, experience_level, role_id) VALUES (10, 2, '1992-06-21', 'TUR', 'Expert', 2);
+INSERT INTO Astronaut (user_id, company_id, date_of_birth, nationality, experience_level, role_id) VALUES (11, 3, '1980-08-19', 'TUR', 'Advanced', 3);
+INSERT INTO Astronaut (user_id, company_id, date_of_birth, nationality, experience_level, role_id) VALUES (12, 1, '1985-12-11', 'IND', 'Intermediate', 4);
+INSERT INTO Astronaut (user_id, company_id, date_of_birth, nationality, experience_level, role_id) VALUES (13, 2, '1993-05-15', 'TUR', 'Beginner', 5);
+INSERT INTO Astronaut (user_id, company_id, date_of_birth, nationality, experience_level, role_id) VALUES (14, 1, '1982-07-22', 'USA', 'Expert', 1);
+INSERT INTO Astronaut (user_id, company_id, date_of_birth, nationality, experience_level, role_id) VALUES (15, 2, '1990-01-01', 'TUR', 'Advanced', 2);
+INSERT INTO Astronaut (user_id, company_id, date_of_birth, nationality, experience_level, role_id) VALUES (16, 3, '1989-09-09', 'CAN', 'Intermediate', 3);
+INSERT INTO Astronaut (user_id, company_id, date_of_birth, nationality, experience_level, role_id) VALUES (17, 1, '1981-10-23', 'IND', 'Beginner', 4);
+INSERT INTO Astronaut (user_id, company_id, date_of_birth, nationality, experience_level, role_id) VALUES (18, 2, '1995-04-18', 'TUR', 'Expert', 5);
+INSERT INTO Astronaut (user_id, company_id, date_of_birth, nationality, experience_level, role_id) VALUES (19, 1, '1979-11-29', 'USA', 'Advanced', 1);
+INSERT INTO Astronaut (user_id, company_id, date_of_birth, nationality, experience_level, role_id) VALUES (20, 2, '1994-02-14', 'TUR', 'Intermediate', 2);
+INSERT INTO Astronaut (user_id, company_id, date_of_birth, nationality, experience_level, role_id) VALUES (21, 3, '1983-03-17', 'CAN', 'Beginner', 3);
+INSERT INTO Astronaut (user_id, company_id, date_of_birth, nationality, experience_level, role_id) VALUES (22, 1, '1987-06-11', 'IND', 'Expert', 4);
+INSERT INTO Astronaut (user_id, company_id, date_of_birth, nationality, experience_level, role_id) VALUES (23, 2, '1991-08-19', 'CHN', 'Advanced', 5);
+INSERT INTO Astronaut (user_id, company_id, date_of_birth, nationality, experience_level, role_id) VALUES (24, 1, '1984-10-30', 'USA', 'Intermediate', 1);
+INSERT INTO Astronaut (user_id, company_id, date_of_birth, nationality, experience_level, role_id) VALUES (25, 2, '1990-12-12', 'TUR', 'Beginner', 2);
+INSERT INTO Astronaut (user_id, company_id, date_of_birth, nationality, experience_level, role_id) VALUES (26, 3, '1986-11-21', 'CAN', 'Expert', 3);
+INSERT INTO Astronaut (user_id, company_id, date_of_birth, nationality, experience_level, role_id) VALUES (27, 1, '1993-09-09', 'IND', 'Advanced', 4);
+INSERT INTO Astronaut (user_id, company_id, date_of_birth, nationality, experience_level, role_id) VALUES (28, 2, '1988-03-15', 'TUR', 'Intermediate', 5);
 
--- Inserting sample data into launch_vehicle table
-INSERT INTO launch_vehicle (launch_vehicle_name, model, status, launch_site)
-VALUES
-('Falcon 9', 'Block 5', 'Operational', 'Cape Canaveral'),
-('Delta IV Heavy', 'Heavy', 'Operational', 'Vandenberg'),
-('Atlas V', '401', 'Operational', 'Cape Canaveral'),
-('Starship', 'Mk1', 'Testing', 'Boca Chica'),
-('New Glenn', 'Rocket', 'In Development', 'Cape Canaveral');
+Insert into User (username, name, password, email) values ('admin', 'Admin', 'admin', 'admin@admin.com');
+Insert into Admin (user_id, permission_level) values (29, 'SuperAdmin');
 
--- Inserting sample data into Spaceship table
-INSERT INTO Spaceship (spaceship_name, type, status, capacity, owner_comp_id, launch_vehicle_id)
-VALUES
-('Spaceship Alpha', 'Exploration', 'Active', 10, 1, 1),
-('Spaceship Beta', 'Mining', 'Active', 15, 2, 2),
-('Spaceship Gamma', 'Research', 'Active', 20, 3, 3),
-('Spaceship Delta', 'Mapping', 'Active', 8, 1, 4),
-('Spaceship Epsilon', 'Tourism', 'Active', 5, 2, 5);
+-- Insert a past mission
+INSERT INTO space_mission (mission_id, mission_name, description, status, launch_date, destination, cost, duration, crew_size, required_roles, bid_deadline, creator_comp_id, manager_comp_id, spaceship_id)
+VALUES 
+(1, 'Mission Past Alpha', 'Completed exploration mission to Mars.', 'Completed', '2022-07-20', 'Mars', 50000000, 180, 10, 'Commander, Pilot, Mission Specialist, Flight Engineer, Medical Doctor', '2021-06-20', 1, 2, 1);
 
--- Inserting space missions
-INSERT INTO space_mission (mission_name, description, status, launch_date, destination, cost, duration, crew_size, required_roles, bid_deadline, creator_comp_id, manager_comp_id, spaceship_id)
-VALUES
-('Mission Alpha', 'Exploration of the Alpha Centauri system', 'Bidding', '2024-09-15', 'Alpha Centauri', 150000000.00, 730, 6, 'Pilot, Engineer, Scientist', '2024-08-20', 1, 2, 1);
+-- Assign Astronaut 1 to the past mission
+INSERT INTO participates (astronaut_id, mission_id) VALUES 
+(4, (SELECT mission_id FROM space_mission WHERE mission_name = 'Mission Past Alpha'));
 
-INSERT INTO space_mission (mission_name, description, status, launch_date, destination, cost, duration, crew_size, required_roles, bid_deadline, creator_comp_id, manager_comp_id, spaceship_id)
-VALUES
-('Mission Beta', 'Mining operation on asteroid 4660 Nereus', 'Planned', '2025-10-05', '4660 Nereus', 200000000.00, 365, 8, 'Pilot, Engineer, Miner', '2024-11-20', 2, 3, 2);
-
-INSERT INTO space_mission (mission_name, description, status, launch_date, destination, cost, duration, crew_size, required_roles, bid_deadline, creator_comp_id, manager_comp_id, spaceship_id)
-VALUES
-('Mission Gamma', 'Establishing a research station on Mars', 'In Progress', '2024-12-15', 'Mars', 500000000.00, 1095, 12, 'Pilot, Engineer, Scientist, Doctor', '2024-08-25', 3, 1, 3);
-
-INSERT INTO space_mission (mission_name, description, status, launch_date, destination, cost, duration, crew_size, required_roles, bid_deadline, creator_comp_id, manager_comp_id, spaceship_id)
-VALUES
-('Mission Delta', 'Mapping the surface of Europa', 'Completed', '2025-01-10', 'Europa', 750000000.00, 548, 10, 'Pilot, Engineer, Scientist', '2024-09-15', 1, 2, 4);
-
-INSERT INTO space_mission (mission_name, description, status, launch_date, destination, cost, duration, crew_size, required_roles, bid_deadline, creator_comp_id, manager_comp_id, spaceship_id)
-VALUES
-('Mission Epsilon', 'Space tourism around the Moon', 'Scheduled', '2024-10-20', 'Moon', 100000000.00, 14, 4, 'Pilot, Tour Guide', '2024-08-30', 2, 3, 5);
-
-DELIMITER $$
-
-CREATE TRIGGER update_mission_status
-BEFORE UPDATE ON space_mission
-FOR EACH ROW
-BEGIN
-    IF NEW.launch_date <= CURDATE() AND (NEW.status = 'Planned' OR NEW.status = 'Bidding') THEN
-        SET NEW.status = 'In Progress';
-    END IF;
-END$$
-
-DELIMITER ;

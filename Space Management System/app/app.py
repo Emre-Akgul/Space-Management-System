@@ -1,4 +1,5 @@
 
+from datetime import datetime
 import re  
 import os
 from flask import Flask, render_template, request, redirect, url_for, session, flash
@@ -91,7 +92,6 @@ def register_company():
 
     return render_template('register_company.html', message=message)
 
-
 @app.route('/login_astronaut', methods=['GET', 'POST'])
 def login_astronaut():
     if request.method == 'POST':
@@ -109,9 +109,9 @@ def login_astronaut():
         cursor.execute('SELECT User.user_id, User.name, User.password FROM User INNER JOIN Astronaut ON User.user_id = Astronaut.user_id WHERE User.username = %s', (username,))
         
         user = cursor.fetchone()
-        if user and bcrypt.checkpw(password.encode('utf-8'), user['password'].encode('utf-8')):
+        if user and password == user['password']:
             session['loggedin'] = True
-            session['userid'] = user['user_id'] 
+            session['userid'] = user['user_id']
             session['username'] = user['name']
             session['astronaut'] = True
             return redirect(url_for('main_page'))
@@ -120,6 +120,7 @@ def login_astronaut():
 
     # If unsuccessful then remain in login
     return render_template('login_astronaut.html')
+
 
 
 @app.route('/register_astronaut', methods=['GET', 'POST'])
@@ -143,26 +144,36 @@ def register_astronaut():
         if not (username and name and password and email and date_of_birth and nationality):
             message = 'Please fill out all required fields!'
         else:
-            cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
+            try:
+                dob = datetime.strptime(date_of_birth, '%Y-%m-%d')
+                current_date = datetime.now()
+                age = (current_date - dob).days // 365
 
-            # Check if username already exists
-            cursor.execute('SELECT user_id FROM User WHERE username = %s', (username,))
-            if cursor.fetchone():
-                message = 'Username already taken. Please choose a different username.'
-            else:
-                # Hash password before storing it
-                hashed_password = bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt())
+                if age < 18:
+                    message = 'Astronaut must be older than 18 years.'
+                else:
+                    cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
 
-                # Insert new user into User table
-                cursor.execute('INSERT INTO User (username, name, password, email) VALUES (%s, %s, %s, %s)',
-                               (username, name, hashed_password, email))
-                user_id = cursor.lastrowid  # Fetch the last inserted id
+                    # Check if username already exists
+                    cursor.execute('SELECT user_id FROM User WHERE username = %s', (username,))
+                    if cursor.fetchone():
+                        message = 'Username already taken. Please choose a different username.'
+                    else:
+                        # Hash password before storing it
+                        hashed_password = bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt())
 
-                # Insert new astronaut into Astronaut table
-                cursor.execute('INSERT INTO Astronaut (user_id, company_id, date_of_birth, nationality, role_id) VALUES (%s, %s, %s, %s, %s)',
-                               (user_id, company_id, date_of_birth, nationality, None))
-                mysql.connection.commit()
-                message = 'Astronaut successfully registered!'
+                        # Insert new user into User table
+                        cursor.execute('INSERT INTO User (username, name, password, email) VALUES (%s, %s, %s, %s)',
+                                       (username, name, hashed_password, email))
+                        user_id = cursor.lastrowid  # Fetch the last inserted id
+
+                        # Insert new astronaut into Astronaut table
+                        cursor.execute('INSERT INTO Astronaut (user_id, company_id, date_of_birth, nationality, role_id) VALUES (%s, %s, %s, %s, %s)',
+                                       (user_id, company_id, date_of_birth, nationality, None))
+                        mysql.connection.commit()
+                        message = 'Astronaut successfully registered!'
+            except ValueError:
+                message = 'Invalid date format.'
 
     return render_template('register_astronaut.html', message=message, companies=companies, roles=ROLES)
 
@@ -324,7 +335,6 @@ def managed_biddings():
 
 
 
-
 @app.route('/missions', methods=['GET'])
 def missions():
     # Existing query parameters
@@ -404,7 +414,7 @@ def mission_details(mission_id):
         bid_amount = request.form.get('bid_amount')
         # Insert bid into database
         cursor.execute('INSERT INTO bid (bid_amount, bid_date, status, company_id, mission_id) VALUES (%s, CURDATE(), %s, %s, %s)',
-                       (bid_amount, 'Submitted', session.get('user_id'), mission_id))
+                       (bid_amount, 'Submitted', session.get('userid'), mission_id))
         mysql.connection.commit()
         # Flash success message
         flash(f'Bid submitted successfully for mission {mission["mission_name"]}!', 'success')
@@ -451,6 +461,7 @@ def biddings():
 
     cursor.close()
     return render_template('biddings.html', missions=missions)
+
 
 @app.route('/handle_bid/<int:bid_id>/<int:mission_id>', methods=['POST'])
 def handle_bid(bid_id, mission_id):
@@ -503,7 +514,6 @@ def handle_bid(bid_id, mission_id):
 
     flash('Bid accepted, mission updated, and payment processed!', 'success')
     return redirect(url_for('biddings'))
-
 
 @app.route('/managed_missions', methods=['GET', 'POST'])
 def managed_missions():
@@ -660,6 +670,161 @@ def logout():
     
     return redirect(url_for('login_company'))
 
+@app.route('/create_space_mission', methods=['GET', 'POST'])
+def create_space_mission():
+	if 'loggedin' in session:
+		if request.method == 'POST':
+			mission_name = request.form.get('mission_name')
+			description = request.form.get('description')
+			launch_date = request.form.get('launch_date')
+			destination = request.form.get('destination')
+			cost = request.form.get('cost')
+			duration = request.form.get('duration')
+			crew_size = request.form.get('crew_size')
+			required_roles = request.form.get('required_roles')
+			bid_deadline = request.form.get('bid_deadline')
+			creator_comp_id = session['userid']
+			status = 'Bidding'
+
+			if not (mission_name and description and launch_date and destination and cost and duration and crew_size and required_roles and bid_deadline):
+				flash('Please fill out all required fields!', 'danger')
+				return redirect(url_for('create_space_mission'))
+
+			if len(mission_name) > 255:
+				flash('Mission name exceeds maximum length (255 characters)!', 'danger')
+				return redirect(url_for('create_space_mission'))
+			if len(description) > 4096:
+				flash('Description exceeds maximum length (4096 characters)!', 'danger')
+				return redirect(url_for('create_space_mission'))
+			if len(destination) > 100:
+				flash('Destination exceeds maximum length (100 characters)!', 'danger')
+				return redirect(url_for('create_space_mission'))
+			if len(required_roles) > 255:
+				flash('Required roles exceeds maximum length (255 characters)!', 'danger')
+				return redirect(url_for('create_space_mission'))
+
+			try:
+				bid_deadline = datetime.strptime(bid_deadline, '%Y-%m-%d')
+				launch_date = datetime.strptime(launch_date, '%Y-%m-%d')
+			except ValueError:
+				flash('Invalid date format! Please use YYYY-MM-DD.', 'danger')
+				return redirect(url_for('create_space_mission'))
+
+			if bid_deadline <= datetime.now():
+				flash('Bid deadline must be in the future!', 'danger')
+				return redirect(url_for('create_space_mission'))
+
+			if launch_date <= bid_deadline:
+				flash('Launch date must be after the bid deadline!', 'danger')
+				return redirect(url_for('create_space_mission'))
+
+			cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
+			cursor.execute('INSERT INTO space_mission (mission_name, description, status, launch_date, destination, cost, duration, crew_size, required_roles, bid_deadline, creator_comp_id) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)',
+						(mission_name, description, status, launch_date, destination, cost, duration, crew_size, required_roles, bid_deadline, creator_comp_id))
+			mysql.connection.commit()
+
+			flash('Space mission created successfully!', 'success')
+			return redirect(url_for('main_page'))
+
+		companies, spaceships = get_companies_and_spaceships()
+		return render_template('create_space_mission.html', companies=companies, spaceships=spaceships)
+	else:
+		return redirect(url_for('login_company'))
+
+@app.route('/manage_missions', methods=['GET', 'POST'])
+def manage_missions():
+	if 'loggedin' in session:
+		cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
+		user_id = session['userid']
+
+		if request.method == 'POST':
+			company_type = request.form.get('company_type')
+			
+			if company_type == 'creator':
+				cursor.execute('SELECT * FROM space_mission WHERE creator_comp_id = %s', (user_id,))
+			elif company_type == 'manager':
+				cursor.execute('SELECT * FROM space_mission WHERE manager_comp_id = %s', (user_id,))
+			else:
+				flash('Invalid company type selected', 'danger')
+				return redirect(url_for('manage_missions'))
+
+			missions = cursor.fetchall()
+			return render_template('manage_missions.html', missions=missions, company_type=company_type)
+		
+		return render_template('manage_missions.html', missions=None)
+	else:
+		return redirect(url_for('login_company'))
+
+@app.route('/edit_mission/<int:mission_id>', methods=['GET', 'POST'])
+def edit_mission(mission_id):
+	if 'loggedin' in session:
+		cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
+		
+		cursor.execute('SELECT * FROM space_mission WHERE mission_id = %s', (mission_id,))
+		mission = cursor.fetchone()
+
+		creator_comp_id = session['userid']
+		cursor.execute('''
+			SELECT s.spaceship_id, s.spaceship_name 
+			FROM Spaceship s
+			JOIN owns o ON s.spaceship_id = o.spaceship_id
+			WHERE o.company_id = %s
+		''', (creator_comp_id,))
+		spaceships = cursor.fetchall()
+
+		if request.method == 'POST':
+			mission_name = request.form.get('mission_name')
+			description = request.form.get('description')
+			status = request.form.get('status')
+			launch_date = request.form.get('launch_date')
+			destination = request.form.get('destination')
+			cost = request.form.get('cost')
+			duration = request.form.get('duration')
+			crew_size = request.form.get('crew_size')
+			required_roles = request.form.get('required_roles')
+			bid_deadline = request.form.get('bid_deadline')
+			spaceship_id = request.form.get('spaceship_id')
+
+			if spaceship_id:
+				cursor.execute('''
+					UPDATE space_mission 
+					SET mission_name=%s, description=%s, status=%s, launch_date=%s, destination=%s, 
+						cost=%s, duration=%s, crew_size=%s, required_roles=%s, bid_deadline=%s, spaceship_id=%s 
+					WHERE mission_id=%s
+				''', (mission_name, description, status, launch_date, destination, cost, duration, crew_size, required_roles, bid_deadline, spaceship_id, mission_id))
+			else:
+				cursor.execute('''
+					UPDATE space_mission 
+					SET mission_name=%s, description=%s, status=%s, launch_date=%s, destination=%s, 
+						cost=%s, duration=%s, crew_size=%s, required_roles=%s, bid_deadline=%s 
+					WHERE mission_id=%s
+				''', (mission_name, description, status, launch_date, destination, cost, duration, crew_size, required_roles, bid_deadline, mission_id))
+
+			mysql.connection.commit()
+
+			flash('Mission updated successfully!', 'success')
+			return redirect(url_for('main_page'))
+
+		return render_template('edit_mission.html', mission=mission, spaceships=spaceships)
+	else:
+		return redirect(url_for('login_company'))
+
+def get_companies_and_spaceships():
+	cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
+
+	cursor.execute('''
+		SELECT Company.user_id, User.username AS name 
+		FROM Company 
+		JOIN User ON Company.user_id = User.user_id
+	''')
+	companies = cursor.fetchall()
+
+	user_id = session['userid']
+	cursor.execute('SELECT spaceship_id, spaceship_name FROM Spaceship WHERE owner_comp_id = %s', (user_id,))
+	spaceships = cursor.fetchall()
+
+	return companies, spaceships
+
 
 @app.route('/all_astronauts')
 def all_astronauts():
@@ -699,7 +864,7 @@ def astronaut_profile(user_id):
 
     # Fetch past missions
     cursor.execute('''
-        SELECT space_mission.mission_name, space_mission.description, space_mission.status, 
+        SELECT space_mission.mission_id, space_mission.mission_name, space_mission.description, space_mission.status, 
                space_mission.launch_date, space_mission.destination, space_mission.cost, 
                space_mission.duration, space_mission.crew_size, space_mission.required_roles
         FROM participates
@@ -710,7 +875,7 @@ def astronaut_profile(user_id):
 
     # Fetch upcoming missions
     cursor.execute('''
-        SELECT space_mission.mission_name, space_mission.description, space_mission.status, 
+        SELECT space_mission.mission_id, space_mission.mission_name, space_mission.description, space_mission.status, 
                space_mission.launch_date, space_mission.destination, space_mission.cost, 
                space_mission.duration, space_mission.crew_size, space_mission.required_roles
         FROM participates
@@ -729,8 +894,9 @@ def astronaut_profile(user_id):
 
     # Fetch training records
     cursor.execute('''
-        SELECT Training_program.program_id, Training_program.name, Training_program.description, Role.role_name AS required_for, 
-               astronaut_training.completion_date
+        SELECT Training_program.program_id, Training_program.name, Training_program.description, 
+               Role.role_name AS required_for, astronaut_training.completion_date, 
+               Training_program.difficulty
         FROM astronaut_training
         JOIN Training_program ON astronaut_training.program_id = Training_program.program_id
         JOIN Role ON Training_program.required_for = Role.role_id
@@ -740,13 +906,26 @@ def astronaut_profile(user_id):
 
     # Fetch available training programs
     cursor.execute('''
-        SELECT Training_program.program_id, Training_program.name, Training_program.description, Role.role_name AS required_for
-        FROM Training_program
-        JOIN Role ON Training_program.required_for = Role.role_id
-        WHERE Training_program.program_id NOT IN (
-            SELECT program_id FROM astronaut_training WHERE astronaut_id = %s
+        SELECT tp.program_id, tp.name, tp.description, r.role_name AS required_for, tp.difficulty
+        FROM Training_program tp
+        JOIN Role r ON tp.required_for = r.role_id
+        WHERE NOT EXISTS (
+            SELECT 1
+            FROM astronaut_training at
+            JOIN Training_program completed_tp ON at.program_id = completed_tp.program_id
+            WHERE at.astronaut_id = %s
+            AND completed_tp.required_for = tp.required_for
+            AND (
+                (tp.difficulty = 'Essential' AND completed_tp.difficulty IN ('Intermediate', 'Advanced'))
+                OR (tp.difficulty = 'Intermediate' AND completed_tp.difficulty = 'Advanced')
+            )
         )
-    ''', (user_id,))
+        AND tp.program_id NOT IN (
+            SELECT program_id 
+            FROM astronaut_training 
+            WHERE astronaut_id = %s
+        )
+    ''', (user_id, user_id))
     available_training_programs = cursor.fetchall()
 
     # Fetch roles
@@ -761,49 +940,181 @@ def astronaut_profile(user_id):
                            available_training_programs=available_training_programs,
                            is_own_profile=is_own_profile)
 
-@app.route('/apply_training/<int:user_id>/<int:program_id>', methods=['POST'])
-def apply_training(user_id, program_id):
+@app.route('/add_feedback/<int:mission_id>', methods=['GET', 'POST'])
+def add_feedback(mission_id):
+    if request.method == 'POST':
+        content = request.form['content']
+        user_id = session.get('userid')
+        
+        if not content:
+            flash('Please provide feedback content.', 'danger')
+        else:
+            cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
+            cursor.execute('''
+                INSERT INTO mission_feedback (date_submitted, content, mission_id, feedback_giver)
+                VALUES (%s, %s, %s, %s)
+            ''', (datetime.now().date(), content, mission_id, user_id))
+            mysql.connection.commit()
+            flash('Feedback submitted successfully!', 'success')
+            return redirect(url_for('view_feedback', mission_id=mission_id))
+    
+    return render_template('add_feedback.html', mission_id=mission_id)
+
+@app.route('/view_feedback/<int:mission_id>')
+def view_feedback(mission_id):
+    cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
+    
+    cursor.execute('''
+        SELECT feedback_id, date_submitted, content, User.username AS feedback_giver
+        FROM mission_feedback
+        JOIN User ON mission_feedback.feedback_giver = User.user_id
+        WHERE mission_id = %s
+        ORDER BY date_submitted DESC
+    ''', (mission_id,))
+    feedbacks = cursor.fetchall()
+    
+    return render_template('view_feedback.html', feedbacks=feedbacks, mission_id=mission_id)
+
+@app.route('/apply_training/<int:user_id>', methods=['GET', 'POST'])
+def apply_training(user_id):
     if 'userid' in session and session['userid'] == user_id:
         cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
+        
+        if request.method == 'POST':
+            program_id = request.form.get('program_id')
+
+            # Fetch the difficulty level and required role of the applied program
+            cursor.execute('''
+                SELECT difficulty, required_for 
+                FROM Training_program 
+                WHERE program_id = %s
+            ''', (program_id,))
+            applied_program = cursor.fetchone()
+
+            if applied_program:
+                difficulty = applied_program['difficulty']
+                required_for = applied_program['required_for']
+
+                # Insert the new training program application
+                cursor.execute('''
+                    INSERT INTO astronaut_training (astronaut_id, program_id, completion_date)
+                    VALUES (%s, %s, CURDATE())
+                ''', (user_id, program_id))
+
+                # Determine the difficulty levels to delete based on the applied program's difficulty
+                if difficulty == 'Advanced':
+                    levels_to_delete = ('Essential', 'Intermediate')
+                elif difficulty == 'Intermediate':
+                    levels_to_delete = ('Essential',)
+                else:
+                    levels_to_delete = ()
+
+                # Delete lower-level difficulty training programs if applicable
+                if levels_to_delete:
+                    cursor.execute('''
+                        DELETE at
+                        FROM astronaut_training at
+                        JOIN Training_program tp ON at.program_id = tp.program_id
+                        WHERE at.astronaut_id = %s 
+                        AND tp.required_for = %s
+                        AND tp.difficulty IN %s
+                    ''', (user_id, required_for, levels_to_delete))
+
+                mysql.connection.commit()
+                flash('Training program application submitted successfully', 'success')
+            else:
+                flash('Training program not found', 'danger')
+
+            return redirect(url_for('astronaut_profile', user_id=user_id))
+
+        # Fetch role-based training programs
         cursor.execute('''
-            INSERT INTO astronaut_training (astronaut_id, program_id, completion_date)
-            VALUES (%s, %s, NULL)
-        ''', (user_id, program_id))
-        mysql.connection.commit()
+        SELECT tp.program_id, tp.name, tp.description, r.role_name AS required_for, tp.difficulty
+        FROM Training_program tp
+        JOIN Role r ON tp.required_for = r.role_id
+        WHERE r.role_name != 'Not Assigned'
+        AND NOT EXISTS (
+            SELECT 1
+            FROM astronaut_training at
+            JOIN Training_program completed_tp ON at.program_id = completed_tp.program_id
+            WHERE at.astronaut_id = %s
+            AND completed_tp.required_for = tp.required_for
+            AND (
+                (tp.difficulty = 'Essential' AND completed_tp.difficulty IN ('Intermediate', 'Advanced'))
+                OR (tp.difficulty = 'Intermediate' AND completed_tp.difficulty = 'Advanced')
+            )
+        )
+        AND tp.program_id NOT IN (
+            SELECT program_id 
+            FROM astronaut_training 
+            WHERE astronaut_id = %s
+        )
+    ''', (user_id, user_id))
+        role_based_programs = cursor.fetchall()
 
-        flash('Training program application submitted successfully', 'success')
-    else:
-        flash('You are not authorized to perform this action', 'danger')
+        # Fetch advanced training programs (Not assigned)
+        cursor.execute('''
+            SELECT tp.program_id, tp.name, tp.description, r.role_name AS required_for, tp.difficulty
+            FROM Training_program tp
+            JOIN Role r ON tp.required_for = r.role_id
+            WHERE tp.difficulty = 'Advanced'
+            AND r.role_name = 'Not assigned'
+            AND tp.program_id NOT IN (
+                SELECT program_id 
+                FROM astronaut_training 
+                WHERE astronaut_id = %s
+            )
+        ''', (user_id,))
+        advanced_programs = cursor.fetchall()
 
-    return redirect(url_for('astronaut_profile', user_id=user_id))
+        return render_template('apply_training.html', 
+                               role_based_programs=role_based_programs, 
+                               advanced_programs=advanced_programs, 
+                               user_id=user_id)
+
+    flash('You are not authorized to perform this action', 'danger')
+    return redirect(url_for('index'))
+
+
+
 
 @app.route('/add_health_record/<int:user_id>', methods=['GET', 'POST'])
 def add_health_record(user_id):
     if session.get('userid') != user_id:
         flash('You are not authorized to add health records for this astronaut', 'danger')
         return redirect(url_for('astronaut_profile', user_id=user_id))
-    
+
     if request.method == 'POST':
         checkup_date = request.form['checkup_date']
         health_status = request.form['health_status']
         fitness_level = request.form['fitness_level']
         expected_ready_time = request.form['expected_ready_time']
-        
+
         if not (checkup_date and health_status and fitness_level):
             flash('Please fill out all required fields', 'danger')
         else:
-            cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
-            if not expected_ready_time:
-                expected_ready_time = None
-            cursor.execute('''
-                INSERT INTO Health_record (checkup_date, health_status, fitness_level, expected_ready_time, astronaut_id)
-                VALUES (%s, %s, %s, %s, %s)
-            ''', (checkup_date, health_status, fitness_level, expected_ready_time, user_id))
-            mysql.connection.commit()
-            flash('Health record added successfully', 'success')
-            return redirect(url_for('astronaut_profile', user_id=user_id))
+            try:
+                checkup_date_obj = datetime.strptime(checkup_date, '%Y-%m-%d')
+                current_date = datetime.now()
+
+                if checkup_date_obj > current_date:
+                    flash('Checkup date cannot be later than the current date', 'danger')
+                else:
+                    cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
+                    if not expected_ready_time:
+                        expected_ready_time = None
+                    cursor.execute('''
+                        INSERT INTO Health_record (checkup_date, health_status, fitness_level, expected_ready_time, astronaut_id)
+                        VALUES (%s, %s, %s, %s, %s)
+                    ''', (checkup_date, health_status, fitness_level, expected_ready_time, user_id))
+                    mysql.connection.commit()
+                    flash('Health record added successfully', 'success')
+                    return redirect(url_for('astronaut_profile', user_id=user_id))
+            except ValueError:
+                flash('Invalid date format', 'danger')
 
     return render_template('add_health_record.html', user_id=user_id)
+
 
 @app.route('/change_role/<int:user_id>', methods=['POST'])
 def change_role(user_id):
@@ -826,6 +1137,78 @@ def change_role(user_id):
 
     return redirect(url_for('astronaut_profile', user_id=user_id))
 
+@app.route('/edit_astronauts/<int:mission_id>', methods=['GET', 'POST'])
+def edit_astronauts(mission_id):
+	if 'loggedin' in session:
+		cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
+
+		cursor.execute('SELECT * FROM space_mission WHERE mission_id = %s', (mission_id,))
+		mission = cursor.fetchone()
+		mission_launch_date = mission['launch_date']
+
+		manager_comp_id = session['userid']
+		cursor.execute('''
+			SELECT a.user_id AS astronaut_id, u.name AS astronaut_name 
+			FROM Astronaut a
+			JOIN User u ON a.user_id = u.user_id
+			WHERE a.company_id = %s
+		''', (manager_comp_id,))
+		astronauts = cursor.fetchall()
+
+		cursor.execute('''
+			SELECT astronaut_id 
+			FROM participates 
+			WHERE mission_id = %s
+		''', (mission_id,))
+		current_participants = cursor.fetchall()
+		current_participants_ids = {participant['astronaut_id'] for participant in current_participants}
+
+		astronaut_health_status = {}
+		for astronaut in astronauts:
+			cursor.execute('''
+				SELECT expected_ready_time 
+				FROM Health_record 
+				WHERE astronaut_id = %s AND fitness_level = 'Injured'
+				ORDER BY checkup_date DESC 
+				LIMIT 1
+			''', (astronaut['astronaut_id'],))
+			health_record = cursor.fetchone()
+			if health_record:
+				expected_ready_time = health_record['expected_ready_time']
+				if expected_ready_time.date() >= mission_launch_date:
+					astronaut_health_status[astronaut['astronaut_id']] = 'Injured'
+				else:
+					astronaut_health_status[astronaut['astronaut_id']] = 'Healthy'
+			else:
+				astronaut_health_status[astronaut['astronaut_id']] = 'Healthy'
+
+		if request.method == 'POST':
+			selected_astronauts = request.form.getlist('astronauts')
+			selected_astronaut_ids = set(map(int, selected_astronauts))
+
+			astronauts_to_add = selected_astronaut_ids - current_participants_ids
+			astronauts_to_remove = current_participants_ids - selected_astronaut_ids
+
+			for astronaut_id in astronauts_to_add:
+				cursor.execute('''
+					INSERT INTO participates (mission_id, astronaut_id) 
+					VALUES (%s, %s)
+				''', (mission_id, astronaut_id))
+
+			for astronaut_id in astronauts_to_remove:
+				cursor.execute('''
+					DELETE FROM participates
+					WHERE mission_id = %s AND astronaut_id = %s
+				''', (mission_id, astronaut_id))
+
+			mysql.connection.commit()
+
+			flash('Astronauts updated successfully!', 'success')
+			return redirect(url_for('main_page'))
+
+		return render_template('edit_astronauts.html', mission=mission, astronauts=astronauts, current_participants_ids=current_participants_ids, astronaut_health_status=astronaut_health_status)
+	else:
+		return redirect(url_for('login_company'))
 
 @app.route('/reports')
 def reports():

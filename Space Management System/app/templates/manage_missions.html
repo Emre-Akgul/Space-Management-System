@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>Manage Space Missions</title>
+	<link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+	<style>
+		body {
+			font-family: Arial, sans-serif;
+			background-color: #f0f8ff;
+			padding: 20px;
+		}
+		.container {
+			max-width: 800px;
+			margin: 0 auto;
+			background-color: #fff;
+			padding: 20px;
+			box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+		}
+		h1 {
+			text-align: center;
+			color: #333;
+		}
+		.btn {
+			display: inline-block;
+			padding: 10px 20px;
+			margin: 5px;
+			background-color: #007bff;
+			color: white;
+			text-align: center;
+			border-radius: 5px;
+			text-decoration: none;
+			cursor: pointer;
+		}
+		.btn:hover {
+			background-color: #0056b3;
+		}
+		.mission-list {
+			margin-top: 20px;
+		}
+		.mission-item {
+			background-color: #e9ecef;
+			padding: 10px;
+			margin-bottom: 10px;
+			border-radius: 5px;
+		}
+		.mission-item h2 {
+			margin-top: 0;
+			color: #007bff;
+		}
+		.back-btn {
+			display: block;
+			text-align: center;
+			margin-top: 20px;
+			padding: 10px;
+			background-color: #007bff;
+			color: white;
+			text-decoration: none;
+			border-radius: 5px;
+		}
+		.back-btn:hover {
+			background-color: #0056b3;
+		}
+	</style>
+</head>
+<body>
+	<div class="container">
+		<h1>Manage Space Missions</h1>
+
+		<form method="POST" action="{{ url_for('manage_missions') }}">
+			<label for="company_type">Select Company Type:</label>
+			<select name="company_type" id="company_type">
+				<option value="creator">Creator Company</option>
+				<option value="manager">Manager Company</option>
+			</select>
+			<button type="submit" class="btn">View Missions</button>
+		</form>
+
+		{% if missions %}
+		<div class="mission-list">
+			{% for mission in missions %}
+			<div class="mission-item">
+				<h2>{{ mission.mission_name }}</h2>
+				<p><strong>Description:</strong> {{ mission.description }}</p>
+				<p><strong>Status:</strong> {{ mission.status }}</p>
+				<p><strong>Launch Date:</strong> {{ mission.launch_date }}</p>
+				<p><strong>Destination:</strong> {{ mission.destination }}</p>
+				<p><strong>Cost:</strong> {{ mission.cost }}</p>
+				<p><strong>Duration:</strong> {{ mission.duration }} days</p>
+				<p><strong>Crew Size:</strong> {{ mission.crew_size }}</p>
+				<p><strong>Required Roles:</strong> {{ mission.required_roles }}</p>
+				<p><strong>Bid Deadline:</strong> {{ mission.bid_deadline }}</p>
+				<p><strong>Spaceship ID:</strong> {{ mission.spaceship_id }}</p>
+				<a href="{{ url_for('edit_mission', mission_id=mission.mission_id) }}" class="btn">Edit Mission</a>
+				{% if company_type == 'manager' %}
+				<a href="{{ url_for('edit_astronauts', mission_id=mission.mission_id) }}" class="btn">Edit Astronauts</a>
+				{% endif %}
+			</div>
+			{% endfor %}
+		</div>
+		{% endif %}
+		
+		<a href="{{ url_for('main_page') }}" class="back-btn">Go Back</a>
+	</div>
+</body>
+</html>
