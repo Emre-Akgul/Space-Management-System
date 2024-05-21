@@ -128,7 +128,17 @@ def register_astronaut():
     message = ''
     cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
 
-    cursor.execute('SELECT Company.user_id AS company_id, User.name AS company_name FROM Company JOIN User ON Company.user_id = User.user_id')
+    cursor.execute("""
+        SELECT 
+            Company.user_id AS company_id,  
+            User.name AS company_name  
+        FROM 
+            Company  
+        JOIN    
+            User 
+        ON 
+            Company.user_id = User.user_id
+    """)
     companies = cursor.fetchall()
 
     if request.method == 'POST':
@@ -828,34 +838,77 @@ def get_companies_and_spaceships():
 
 @app.route('/all_astronauts')
 def all_astronauts():
+    # For debug show all astronauts in one page
     cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
-    cursor.execute('''
-        SELECT User.user_id, User.username, User.name, User.email, Astronaut.date_of_birth, 
-               Astronaut.nationality, Astronaut.experience_level, Role.role_name AS preferred_role, 
-               Company.address, Company.industry_sector, Company.website
-        FROM User 
-        JOIN Astronaut ON User.user_id = Astronaut.user_id 
-        LEFT JOIN Company ON Astronaut.company_id = Company.user_id
-        LEFT JOIN Role ON Astronaut.role_id = Role.role_id
-    ''')
+    cursor.execute("""
+        SELECT 
+            User.user_id, 
+            User.username, 
+            User.name, 
+            User.email, 
+            Astronaut.date_of_birth, 
+            Astronaut.nationality, 
+            Astronaut.experience_level, 
+            Role.role_name AS preferred_role, 
+            Company.address, 
+            Company.industry_sector, 
+            Company.website
+        FROM 
+            User 
+        JOIN 
+            Astronaut 
+        ON 
+            User.user_id = Astronaut.user_id 
+        LEFT JOIN 
+            Company 
+        ON 
+            Astronaut.company_id = Company.user_id
+        LEFT JOIN 
+            Role 
+        ON 
+            Astronaut.role_id = Role.role_id
+    """)
+
     astronauts = cursor.fetchall()
     return render_template('all_astronauts.html', astronauts=astronauts)
 
 @app.route('/astronaut/<int:user_id>')
 def astronaut_profile(user_id):
+    # Astronaut specific profile
     cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
 
     # Fetch astronaut details
-    cursor.execute('''
-        SELECT User.user_id, User.username, User.name, User.email, Astronaut.date_of_birth, 
-               Astronaut.nationality, Astronaut.experience_level, Role.role_name AS preferred_role, 
-               Company.address, Company.industry_sector, Company.website
-        FROM User 
-        JOIN Astronaut ON User.user_id = Astronaut.user_id 
-        LEFT JOIN Company ON Astronaut.company_id = Company.user_id
-        LEFT JOIN Role ON Astronaut.role_id = Role.role_id
-        WHERE User.user_id = %s
-    ''', (user_id,))
+    cursor.execute("""
+        SELECT 
+            User.user_id, 
+            User.username, 
+            User.name, 
+            User.email, 
+            Astronaut.date_of_birth, 
+            Astronaut.nationality, 
+            Astronaut.experience_level, 
+            Role.role_name AS preferred_role, 
+            Company.address, 
+            Company.industry_sector, 
+            Company.website
+        FROM 
+            User 
+        JOIN 
+            Astronaut 
+        ON 
+            User.user_id = Astronaut.user_id 
+        LEFT JOIN 
+            Company 
+        ON 
+            Astronaut.company_id = Company.user_id
+        LEFT JOIN 
+            Role 
+        ON 
+            Astronaut.role_id = Role.role_id
+        WHERE 
+            User.user_id = %s
+    """, (user_id,))
+
     astronaut = cursor.fetchone()
 
     if not astronaut:
@@ -863,28 +916,58 @@ def astronaut_profile(user_id):
         return redirect(url_for('all_astronauts'))
 
     # Fetch past missions
-    cursor.execute('''
-        SELECT space_mission.mission_id, space_mission.mission_name, space_mission.description, space_mission.status, 
-               space_mission.launch_date, space_mission.destination, space_mission.cost, 
-               space_mission.duration, space_mission.crew_size, space_mission.required_roles
-        FROM participates
-        JOIN space_mission ON participates.mission_id = space_mission.mission_id
-        WHERE participates.astronaut_id = %s AND space_mission.status = 'Completed'
-    ''', (user_id,))
+    cursor.execute("""
+        SELECT 
+            space_mission.mission_id, 
+            space_mission.mission_name, 
+            space_mission.description ,  
+            space_mission.status,  
+            space_mission.launch_date, 
+            space_mission.destination, 
+            space_mission.cost, 
+            space_mission.duration, 
+            space_mission.crew_size, 
+            space_mission.required_roles
+        FROM 
+            participates
+        JOIN
+            space_mission 
+        ON
+            participates.mission_id = space_mission.mission_id
+        WHERE
+            participates.astronaut_id = %s 
+            AND space_mission.status = 'Completed'
+    """, (user_id,))
+
     past_missions = cursor.fetchall()
 
-    # Fetch upcoming missions
-    cursor.execute('''
-        SELECT space_mission.mission_id, space_mission.mission_name, space_mission.description, space_mission.status, 
-               space_mission.launch_date, space_mission.destination, space_mission.cost, 
-               space_mission.duration, space_mission.crew_size, space_mission.required_roles
-        FROM participates
-        JOIN space_mission ON participates.mission_id = space_mission.mission_id
-        WHERE participates.astronaut_id = %s AND space_mission.status != 'Completed'
-    ''', (user_id,))
+    # Upcoming missions
+    cursor.execute("""
+    SELECT 
+        space_mission.mission_id, 
+        space_mission.mission_name, 
+        space_mission.description, 
+        space_mission.status, 
+        space_mission.launch_date, 
+        space_mission.destination, 
+        space_mission.cost, 
+        space_mission.duration, 
+        space_mission.crew_size, 
+        space_mission.required_roles
+    FROM 
+        participates
+    JOIN 
+        space_mission 
+    ON 
+        participates.mission_id = space_mission.mission_id
+    WHERE 
+        participates.astronaut_id = %s 
+        AND space_mission.status != 'Completed'
+""", (user_id,))
+
     upcoming_missions = cursor.fetchall()
 
-    # Fetch health records
+    # Health records
     cursor.execute('''
         SELECT checkup_date, health_status, fitness_level, expected_ready_time
         FROM Health_record
@@ -892,43 +975,67 @@ def astronaut_profile(user_id):
     ''', (user_id,))
     health_records = cursor.fetchall()
 
-    # Fetch training records
-    cursor.execute('''
-        SELECT Training_program.program_id, Training_program.name, Training_program.description, 
-               Role.role_name AS required_for, astronaut_training.completion_date, 
-               Training_program.difficulty
-        FROM astronaut_training
-        JOIN Training_program ON astronaut_training.program_id = Training_program.program_id
-        JOIN Role ON Training_program.required_for = Role.role_id
-        WHERE astronaut_training.astronaut_id = %s
-    ''', (user_id,))
+    # Training records
+    cursor.execute("""
+        SELECT 
+            checkup_date, 
+            health_status, 
+            fitness_level, 
+            expected_ready_time
+        FROM 
+            Health_record
+        WHERE 
+            astronaut_id = %s
+    """, (user_id,))
     training_records = cursor.fetchall()
 
     # Fetch available training programs
-    cursor.execute('''
-        SELECT tp.program_id, tp.name, tp.description, r.role_name AS required_for, tp.difficulty
-        FROM Training_program tp
-        JOIN Role r ON tp.required_for = r.role_id
-        WHERE NOT EXISTS (
-            SELECT 1
-            FROM astronaut_training at
-            JOIN Training_program completed_tp ON at.program_id = completed_tp.program_id
-            WHERE at.astronaut_id = %s
-            AND completed_tp.required_for = tp.required_for
-            AND (
-                (tp.difficulty = 'Essential' AND completed_tp.difficulty IN ('Intermediate', 'Advanced'))
-                OR (tp.difficulty = 'Intermediate' AND completed_tp.difficulty = 'Advanced')
+    # If you take intermediate then begginer is not shown
+    # If advanced taken both essential and intermediate not shown
+    cursor.execute("""
+        SELECT
+            tp.program_id,
+            tp.name,
+            tp.description,
+            r.role_name AS required_for,
+            tp.difficulty
+        FROM
+            Training_program tp
+        JOIN
+            Role r 
+        ON
+            tp.required_for = r.role_id
+        WHERE
+            NOT EXISTS (
+                SELECT
+                    1
+                FROM
+                    astronaut_training at
+                JOIN 
+                    Training_program completed_tp 
+                ON  
+                    at.program_id = completed_tp.program_id
+                WHERE  
+                    at.astronaut_id = %s
+                    AND completed_tp.required_for = tp.required_for
+                    AND (
+                        (tp.difficulty = 'Essential' AND completed_tp.difficulty IN ('Intermediate', 'Advanced'))
+                        OR (tp.difficulty = 'Intermediate' AND completed_tp.difficulty = 'Advanced')
+                    )
             )
-        )
-        AND tp.program_id NOT IN (
-            SELECT program_id 
-            FROM astronaut_training 
-            WHERE astronaut_id = %s
-        )
-    ''', (user_id, user_id))
+            AND tp.program_id NOT IN (
+                SELECT  
+                    program_id  
+                FROM  
+                    astronaut_training 
+                WHERE  
+                    astronaut_id = %s
+            )
+    """, (user_id, user_id))
+
     available_training_programs = cursor.fetchall()
 
-    # Fetch roles
+    # Fetch roles could be global or enum
     cursor.execute('SELECT role_id, role_name FROM Role')
     roles = cursor.fetchall()
 
@@ -942,7 +1049,9 @@ def astronaut_profile(user_id):
 
 @app.route('/add_feedback/<int:mission_id>', methods=['GET', 'POST'])
 def add_feedback(mission_id):
+    # self explanotary
     if request.method == 'POST':
+        # give feedback
         content = request.form['content']
         user_id = session.get('userid')
         
@@ -962,15 +1071,27 @@ def add_feedback(mission_id):
 
 @app.route('/view_feedback/<int:mission_id>')
 def view_feedback(mission_id):
+    # view feedbacks to the mission
+
     cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
-    
-    cursor.execute('''
-        SELECT feedback_id, date_submitted, content, User.username AS feedback_giver
-        FROM mission_feedback
-        JOIN User ON mission_feedback.feedback_giver = User.user_id
-        WHERE mission_id = %s
-        ORDER BY date_submitted DESC
-    ''', (mission_id,))
+    # all feedbacks to the mission
+    cursor.execute("""
+        SELECT 
+            feedback_id, 
+            date_submitted, 
+            content, 
+            User.username AS feedback_giver
+        FROM 
+            mission_feedback
+        JOIN 
+            User 
+        ON 
+            mission_feedback.feedback_giver = User.user_id
+        WHERE 
+            mission_id = %s
+        ORDER BY 
+            date_submitted DESC
+    """, (mission_id,))
     feedbacks = cursor.fetchall()
     
     return render_template('view_feedback.html', feedbacks=feedbacks, mission_id=mission_id)
@@ -1028,43 +1149,76 @@ def apply_training(user_id):
             return redirect(url_for('astronaut_profile', user_id=user_id))
 
         # Fetch role-based training programs
-        cursor.execute('''
-        SELECT tp.program_id, tp.name, tp.description, r.role_name AS required_for, tp.difficulty
-        FROM Training_program tp
-        JOIN Role r ON tp.required_for = r.role_id
-        WHERE r.role_name != 'Not Assigned'
-        AND NOT EXISTS (
-            SELECT 1
-            FROM astronaut_training at
-            JOIN Training_program completed_tp ON at.program_id = completed_tp.program_id
-            WHERE at.astronaut_id = %s
-            AND completed_tp.required_for = tp.required_for
-            AND (
-                (tp.difficulty = 'Essential' AND completed_tp.difficulty IN ('Intermediate', 'Advanced'))
-                OR (tp.difficulty = 'Intermediate' AND completed_tp.difficulty = 'Advanced')
-            )
-        )
-        AND tp.program_id NOT IN (
-            SELECT program_id 
-            FROM astronaut_training 
-            WHERE astronaut_id = %s
-        )
-    ''', (user_id, user_id))
+        cursor.execute("""
+            SELECT
+                tp.program_id, 
+                tp.name, 
+                tp.description, 
+                r.role_name AS required_for, 
+                tp.difficulty 
+            FROM
+                Training_program tp
+            JOIN
+                Role r 
+            ON
+                tp.required_for = r.role_id
+            WHERE
+                r.role_name != 'Not Assigned'
+                AND NOT EXISTS (
+                    SELECT 
+                        1
+                    FROM
+                        astronaut_training at
+                    JOIN 
+                        Training_program completed_tp 
+                    ON 
+                        at.program_id = completed_tp.program_id
+                    WHERE 
+                        at.astronaut_id = %s
+                        AND completed_tp.required_for = tp.required_for
+                        AND (
+                            (tp.difficulty = 'Essential' AND completed_tp.difficulty IN ('Intermediate', 'Advanced'))
+                            OR (tp.difficulty = 'Intermediate' AND completed_tp.difficulty = 'Advanced')
+                        )
+                )
+                AND tp.program_id NOT IN (
+                    SELECT 
+                        program_id 
+                    FROM 
+                        astronaut_training 
+                    WHERE 
+                        astronaut_id = %s
+                )
+        """, (user_id, user_id))
+
         role_based_programs = cursor.fetchall()
 
-        # Fetch advanced training programs (Not assigned)
-        cursor.execute('''
-            SELECT tp.program_id, tp.name, tp.description, r.role_name AS required_for, tp.difficulty
-            FROM Training_program tp
-            JOIN Role r ON tp.required_for = r.role_id
-            WHERE tp.difficulty = 'Advanced'
-            AND r.role_name = 'Not assigned'
-            AND tp.program_id NOT IN (
-                SELECT program_id 
-                FROM astronaut_training 
-                WHERE astronaut_id = %s
-            )
-        ''', (user_id,))
+        # Fetch advanced training programs (Roles which are Not assigned)
+        cursor.execute("""
+            SELECT 
+                tp.program_id, 
+                tp.name, 
+                tp.description, 
+                r.role_name AS required_for, 
+                tp.difficulty
+            FROM 
+                Training_program tp
+            JOIN 
+                Role r 
+            ON 
+                tp.required_for = r.role_id
+            WHERE 
+                tp.difficulty = 'Advanced'
+                AND r.role_name = 'Not assigned'
+                AND tp.program_id NOT IN (
+                    SELECT 
+                        program_id 
+                    FROM 
+                        astronaut_training 
+                    WHERE 
+                        astronaut_id = %s
+                )
+        """, (user_id,))
         advanced_programs = cursor.fetchall()
 
         return render_template('apply_training.html', 
