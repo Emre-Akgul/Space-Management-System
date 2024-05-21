@@ -1,0 +1,92 @@
+{% extends "layout.html" %}
+
+{% block content %}
+<div class="container mt-5">
+    <h2>My Ships</h2>
+
+    <!-- Flash messages -->
+    {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+        {% for category, message in messages %}
+        <div class="alert alert-{{ category }}">{{ message }}</div>
+        {% endfor %}
+    {% endif %}
+    {% endwith %}
+
+    <button class="btn btn-primary mb-3" data-toggle="modal" data-target="#addShipModal">Add New Ship</button>
+    <div class="modal fade" id="addShipModal" tabindex="-1" role="dialog" aria-labelledby="addShipModalLabel" aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="addShipModalLabel">Add New Ship</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <form method="post" action="{{ url_for('add_ship') }}">
+                        <div class="form-group">
+                            <label for="spaceship_name">Ship Name</label>
+                            <input type="text" class="form-control" id="spaceship_name" name="spaceship_name" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="type">Type</label>
+                            <input type="text" class="form-control" id="type" name="type" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="capacity">Capacity</label>
+                            <input type="number" class="form-control" id="capacity" name="capacity" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="launch_vehicle_id">Launch Vehicle ID (optional)</label>
+                            <input type="number" class="form-control" id="launch_vehicle_id" name="launch_vehicle_id">
+                        </div>
+                        <button type="submit" class="btn btn-primary">Add Ship</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {% if ships %}
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Ship Name</th>
+                    <th>Type</th>
+                    <th>Status</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for ship in ships %}
+                <tr class="{{ 'table-success' if ship.status == 'Active' else 'table-secondary' }}">
+                    <td>{{ ship.spaceship_name }}</td>
+                    <td>{{ ship.type }}</td>
+                    <td>{{ ship.status }}</td>
+                    <td>
+                        {% if ship.status == 'Active' %}
+                        <form action="{{ url_for('retire_ship', spaceship_id=ship.spaceship_id) }}" method="post">
+                            <button type="submit" class="btn btn-warning">Retire</button>
+                        </form>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    {% else %}
+        <div class="alert alert-info" role="alert">
+            No ships available at the moment.
+        </div>
+    {% endif %}
+</div>
+{% endblock %}
+
+<script>
+  $(document).ready(function() {
+    $('#addShipModal').on('shown.bs.modal', function () {
+      $('#spaceship_name').focus();
+    })
+  });
+</script>

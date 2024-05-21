@@ -1,0 +1,50 @@
+{% extends "layout.html" %}
+
+{% block content %}
+    <div class="container mt-5">
+        <h1>All Astronauts</h1>
+
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                <div class="alert alert-{{ category }}">{{ message }}</div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+
+        {% if astronauts %}
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Username</th>
+                    <th>Name</th>
+                    <th>Email</th>
+                    <th>Date of Birth</th>
+                    <th>Nationality</th>
+                    <th>Experience Level</th>
+                    <th>Role</th>
+                    <th>Company Address</th>
+                    <th>Industry Sector</th>
+                    <th>Company Website</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for astronaut in astronauts %}
+                <tr>
+                    <td><a href="{{ url_for('astronaut_profile', user_id=astronaut.user_id) }}">{{ astronaut.username }}</a></td>
+                    <td>{{ astronaut.name }}</td>
+                    <td>{{ astronaut.email }}</td>
+                    <td>{{ astronaut.date_of_birth }}</td>
+                    <td>{{ astronaut.nationality }}</td>
+                    <td>{{ astronaut.experience_level }}</td>
+                    <td>{{ astronaut.preferred_role }}</td>
+                    <td>{{ astronaut.address }}</td>
+                    <td>{{ astronaut.industry_sector }}</td>
+                    <td><a href="{{ astronaut.website }}" target="_blank">{{ astronaut.website }}</a></td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% endif %}
+    </div>
+{% endblock %}

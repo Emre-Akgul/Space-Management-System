@@ -1,0 +1,59 @@
+{% extends "layout.html" %}
+
+{% block content %}
+<div class="container mt-5">
+    <h2>Add Health Record for Astronaut {{ user_id }}</h2>
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            {% for category, message in messages %}
+                <div class="alert alert-{{ category }}">{{ message }}</div>
+            {% endfor %}
+        {% endif %}
+    {% endwith %}
+
+    <form action="{{ url_for('add_health_record', user_id=user_id) }}" method="post">
+        <div class="form-group">
+            <label for="checkup_date">Checkup Date:</label>
+            <input type="date" class="form-control" id="checkup_date" name="checkup_date" required>
+        </div>
+        <div class="form-group">
+            <label for="health_status">Health Status:</label>
+            <input type="text" class="form-control" id="health_status" name="health_status" required>
+        </div>
+        <div class="form-group">
+            <label for="fitness_level">Fitness Level:</label>
+            <select class="form-control" id="fitness_level" name="fitness_level" required>
+                <option value="Optimal">Optimal</option>
+                <option value="Above Average">Above Average</option>
+                <option value="Average">Average</option>
+                <option value="Below Average">Below Average</option>
+                <option value="Injured">Injured</option>
+            </select>
+        </div>
+        <div class="form-group" id="ready_time_div" style="display: none;">
+            <label for="expected_ready_time">Expected Ready Time:</label>
+            <input type="datetime-local" class="form-control" id="expected_ready_time" name="expected_ready_time">
+        </div>
+        <button type="submit" class="btn btn-secondary">Add Health Record</button>
+    </form>
+    <a href="{{ url_for('astronaut_profile', user_id=user_id) }}" class="btn btn-secondary mt-3">Back to Profile</a>
+</div>
+
+<script>
+    function checkFitnessLevel() {
+        var fitnessLevel = document.getElementById('fitness_level').value;
+        var readyTimeDiv = document.getElementById('ready_time_div');
+        if (fitnessLevel === 'Injured') {
+            readyTimeDiv.style.display = 'block';
+        } else {
+            readyTimeDiv.style.display = 'none';
+        }
+    }
+
+    document.addEventListener('DOMContentLoaded', function() {
+        checkFitnessLevel();  // Check initial state on load
+        document.getElementById('fitness_level').addEventListener('change', checkFitnessLevel);
+    });
+</script>
+{% endblock %}
